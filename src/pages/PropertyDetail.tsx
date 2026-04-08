@@ -298,7 +298,7 @@ export default function PropertyDetail() {
             <DropdownSelect
               value={status}
               options={STATUSES.map(s => ({ value: s, label: s }))}
-              onSelect={setStatus}
+              onSelect={(v) => setStatus(v as Property["status"])}
               renderValue={(v) => <StatusBadge variant={propertyStatusVariant(v)}>{v}</StatusBadge>}
             />
             <button onClick={() => setShowDelete(true)} className="h-8 w-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
