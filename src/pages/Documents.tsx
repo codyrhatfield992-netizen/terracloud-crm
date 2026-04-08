@@ -142,7 +142,7 @@ export default function Documents() {
 
         {/* Content */}
         {filtered.length === 0 ? (
-          <EmptyState icon={FileText} title="No documents uploaded yet" description="Upload your first file" />
+          <EmptyState icon={<FileText className="h-10 w-10" />} title="No documents uploaded yet" description="Upload your first file" />
         ) : view === "grid" ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {filtered.map(d => {
