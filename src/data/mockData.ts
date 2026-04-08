@@ -102,7 +102,9 @@ export interface ActivityItem {
   id: string;
   action: string;
   user: string;
+  user_id: string;
   entity: string;
+  entity_id: string;
   entity_type: "lead" | "contact" | "property" | "task";
   timestamp: string;
 }
@@ -122,6 +124,9 @@ export const contacts: Contact[] = [
   { id: "c5", name: "Angela Torres", email: "a.torres@email.com", phone: "(512) 555-0411", type: "Agent", tags: ["Referral Partner"], created_at: "2024-02-28" },
   { id: "c6", name: "David Chen", email: "d.chen@email.com", phone: "(512) 555-0523", type: "Seller", tags: ["Pre-Foreclosure"], created_at: "2024-03-15" },
   { id: "c7", name: "Patricia Williams", email: "pwilliams@email.com", phone: "(512) 555-0687", type: "Other", tags: ["Title Company"], created_at: "2024-01-05" },
+  { id: "c8", name: "Marcus Green", email: "m.green@email.com", phone: "(512) 555-0791", type: "Buyer", tags: ["Cash Buyer"], created_at: "2024-03-20" },
+  { id: "c9", name: "Sandra Lee", email: "s.lee@email.com", phone: "(512) 555-0855", type: "Seller", tags: ["Motivated", "Divorce"], created_at: "2024-03-22" },
+  { id: "c10", name: "Victor Ramirez", email: "v.ramirez@email.com", phone: "(512) 555-0912", type: "Agent", tags: ["Listing Agent"], created_at: "2024-02-10" },
 ];
 
 export const properties: Property[] = [
@@ -131,9 +136,13 @@ export const properties: Property[] = [
   { id: "p4", address: "7234 Sunset Blvd", city: "Round Rock", state: "TX", zip: "78681", type: "Single Family", beds: 5, baths: 4, sqft: 3200, arv: 620000, asking_price: 510000, offer_price: null, status: "Available", thumbnail: "", created_at: "2024-03-12" },
   { id: "p5", address: "3100 Manor Rd", city: "Austin", state: "TX", zip: "78723", type: "Multi Family", beds: 6, baths: 4, sqft: 2800, arv: 450000, asking_price: 340000, offer_price: 320000, status: "Sold", thumbnail: "", created_at: "2024-01-15" },
   { id: "p6", address: "456 Industrial Pkwy", city: "Cedar Park", state: "TX", zip: "78613", type: "Commercial", beds: 0, baths: 2, sqft: 5000, arv: 750000, asking_price: 600000, offer_price: null, status: "Off Market", thumbnail: "", created_at: "2024-02-01" },
+  { id: "p7", address: "2208 Lamar Blvd", city: "Austin", state: "TX", zip: "78705", type: "Townhouse", beds: 3, baths: 2, sqft: 1650, arv: 420000, asking_price: 350000, offer_price: 335000, status: "Under Contract", thumbnail: "", created_at: "2024-03-18" },
+  { id: "p8", address: "9901 Anderson Mill Rd", city: "Austin", state: "TX", zip: "78750", type: "Single Family", beds: 4, baths: 3, sqft: 2100, arv: 475000, asking_price: 380000, offer_price: null, status: "Available", thumbnail: "", created_at: "2024-03-25" },
+  { id: "p9", address: "555 Riverside Dr", city: "Pflugerville", state: "TX", zip: "78660", type: "Single Family", beds: 3, baths: 2, sqft: 1700, arv: 340000, asking_price: 265000, offer_price: 250000, status: "Available", thumbnail: "", created_at: "2024-03-28" },
 ];
 
 export const leads: Lead[] = [
+  // New (15)
   { id: "l1", title: "Oak Ridge Wholesale Deal", stage: "contract", priority: "High", source: "Direct Mail", estimated_value: 45000, next_follow_up: "2024-04-12", tags: ["Wholesale", "Hot"], contact_id: "c1", property_id: "p1", assigned_user: "u1", created_at: "2024-03-01" },
   { id: "l2", title: "Elm Street Flip Opportunity", stage: "tour", priority: "Medium", source: "Referral", estimated_value: 65000, next_follow_up: "2024-04-10", tags: ["Flip"], contact_id: "c3", property_id: "p2", assigned_user: "u2", created_at: "2024-02-20" },
   { id: "l3", title: "Congress Ave Condo Assignment", stage: "offer", priority: "High", source: "Zillow", estimated_value: 25000, next_follow_up: "2024-04-08", tags: ["Assignment"], contact_id: "c2", property_id: "p3", assigned_user: "u1", created_at: "2024-03-05" },
@@ -142,6 +151,58 @@ export const leads: Lead[] = [
   { id: "l6", title: "Pre-Foreclosure Lead - Chen", stage: "new", priority: "Urgent", source: "Driving for Dollars", estimated_value: 35000, next_follow_up: "2024-04-09", tags: ["Pre-Foreclosure", "Urgent"], contact_id: "c6", property_id: null, assigned_user: "u4", created_at: "2024-03-15" },
   { id: "l7", title: "Buyer Lead - Robert J.", stage: "new", priority: "Medium", source: "Facebook Ads", estimated_value: 0, next_follow_up: "2024-04-11", tags: ["Buyer"], contact_id: "c4", property_id: null, assigned_user: "u3", created_at: "2024-03-18" },
   { id: "l8", title: "Industrial Property Inquiry", stage: "dead", priority: "Low", source: "Website", estimated_value: 0, next_follow_up: null, tags: ["Commercial"], contact_id: "c7", property_id: "p6", assigned_user: "u1", created_at: "2024-02-01" },
+  // More leads for realistic pipeline numbers
+  { id: "l9", title: "Lamar Blvd Townhouse Flip", stage: "contract", priority: "High", source: "Referral", estimated_value: 55000, next_follow_up: "2024-04-13", tags: ["Flip", "Hot"], contact_id: "c8", property_id: "p7", assigned_user: "u1", created_at: "2024-03-18" },
+  { id: "l10", title: "Anderson Mill Listing", stage: "contacted", priority: "Medium", source: "Cold Call", estimated_value: 95000, next_follow_up: "2024-04-10", tags: ["Listing"], contact_id: "c9", property_id: "p8", assigned_user: "u2", created_at: "2024-03-25" },
+  { id: "l11", title: "Riverside Dr Wholesale", stage: "offer", priority: "High", source: "Direct Mail", estimated_value: 40000, next_follow_up: "2024-04-09", tags: ["Wholesale"], contact_id: "c9", property_id: "p9", assigned_user: "u4", created_at: "2024-03-28" },
+  { id: "l12", title: "Investor Buyer - Marcus G.", stage: "new", priority: "Low", source: "Website", estimated_value: 0, next_follow_up: "2024-04-14", tags: ["Buyer"], contact_id: "c8", property_id: null, assigned_user: "u3", created_at: "2024-03-20" },
+  { id: "l13", title: "Probate Lead - West Campus", stage: "new", priority: "High", source: "Probate List", estimated_value: 70000, next_follow_up: "2024-04-08", tags: ["Probate", "Motivated"], contact_id: "c1", property_id: null, assigned_user: "u1", created_at: "2024-04-01" },
+  { id: "l14", title: "Divorce Sale - Sandra Lee", stage: "new", priority: "Urgent", source: "Attorney Referral", estimated_value: 42000, next_follow_up: "2024-04-08", tags: ["Motivated", "Divorce"], contact_id: "c9", property_id: null, assigned_user: "u4", created_at: "2024-04-02" },
+  { id: "l15", title: "REO - Bank Owned Property", stage: "new", priority: "Medium", source: "REO List", estimated_value: 55000, next_follow_up: "2024-04-11", tags: ["REO"], contact_id: "c10", property_id: null, assigned_user: "u2", created_at: "2024-04-03" },
+  { id: "l16", title: "Cold Call Lead - S. Lamar", stage: "new", priority: "Low", source: "Cold Call", estimated_value: 0, next_follow_up: "2024-04-16", tags: [], contact_id: "c3", property_id: null, assigned_user: "u3", created_at: "2024-04-04" },
+  { id: "l17", title: "Absentee Owner - Rundberg", stage: "new", priority: "Medium", source: "Skip Trace", estimated_value: 30000, next_follow_up: "2024-04-12", tags: ["Absentee"], contact_id: "c3", property_id: null, assigned_user: "u1", created_at: "2024-04-05" },
+  { id: "l18", title: "Facebook Ad Lead - Williams", stage: "new", priority: "Low", source: "Facebook Ads", estimated_value: 0, next_follow_up: "2024-04-13", tags: ["Buyer"], contact_id: "c7", property_id: null, assigned_user: "u2", created_at: "2024-04-05" },
+  { id: "l19", title: "Google PPC Lead - Pflugerville", stage: "new", priority: "Medium", source: "Google Ads", estimated_value: 28000, next_follow_up: "2024-04-10", tags: ["Seller"], contact_id: "c6", property_id: null, assigned_user: "u4", created_at: "2024-04-06" },
+  { id: "l20", title: "Referral - Torres Network", stage: "new", priority: "High", source: "Referral", estimated_value: 50000, next_follow_up: "2024-04-09", tags: ["Referral", "Hot"], contact_id: "c5", property_id: null, assigned_user: "u1", created_at: "2024-04-07" },
+  { id: "l21", title: "Drive4Dollars - E. Cesar Chavez", stage: "new", priority: "Medium", source: "Driving for Dollars", estimated_value: 38000, next_follow_up: "2024-04-11", tags: ["Distressed"], contact_id: "c6", property_id: null, assigned_user: "u3", created_at: "2024-04-07" },
+  { id: "l22", title: "Texting Campaign - Batch 12", stage: "new", priority: "Low", source: "SMS Campaign", estimated_value: 0, next_follow_up: "2024-04-15", tags: ["SMS"], contact_id: "c4", property_id: null, assigned_user: "u2", created_at: "2024-04-07" },
+  { id: "l23", title: "Bandit Sign Lead - N. Lamar", stage: "new", priority: "Medium", source: "Bandit Sign", estimated_value: 32000, next_follow_up: "2024-04-10", tags: ["Seller"], contact_id: "c9", property_id: null, assigned_user: "u4", created_at: "2024-04-07" },
+  // More contacted
+  { id: "l24", title: "SEO Lead - Georgetown Seller", stage: "contacted", priority: "Medium", source: "Website", estimated_value: 60000, next_follow_up: "2024-04-11", tags: ["Seller"], contact_id: "c1", property_id: null, assigned_user: "u1", created_at: "2024-03-20" },
+  { id: "l25", title: "Networking Event - Investor", stage: "contacted", priority: "Low", source: "Networking", estimated_value: 0, next_follow_up: "2024-04-14", tags: ["Buyer", "Investor"], contact_id: "c2", property_id: null, assigned_user: "u3", created_at: "2024-03-22" },
+  { id: "l26", title: "Referral - Realtor Torres", stage: "contacted", priority: "High", source: "Referral", estimated_value: 75000, next_follow_up: "2024-04-09", tags: ["Seller", "Hot"], contact_id: "c5", property_id: null, assigned_user: "u2", created_at: "2024-03-25" },
+  { id: "l27", title: "Cold Call - Cedar Park Owner", stage: "contacted", priority: "Medium", source: "Cold Call", estimated_value: 45000, next_follow_up: "2024-04-12", tags: ["Absentee"], contact_id: "c3", property_id: null, assigned_user: "u4", created_at: "2024-03-27" },
+  { id: "l28", title: "Walk-In Inquiry - Office", stage: "contacted", priority: "Low", source: "Walk-In", estimated_value: 0, next_follow_up: "2024-04-16", tags: ["Buyer"], contact_id: "c4", property_id: null, assigned_user: "u1", created_at: "2024-03-30" },
+  { id: "l29", title: "Voicemail Follow-Up - Ramirez", stage: "contacted", priority: "Medium", source: "Cold Call", estimated_value: 50000, next_follow_up: "2024-04-10", tags: ["Seller"], contact_id: "c10", property_id: null, assigned_user: "u3", created_at: "2024-04-01" },
+  { id: "l30", title: "Text Response - Tax Delinquent", stage: "contacted", priority: "High", source: "SMS Campaign", estimated_value: 35000, next_follow_up: "2024-04-08", tags: ["Tax Delinquent", "Motivated"], contact_id: "c6", property_id: null, assigned_user: "u2", created_at: "2024-04-03" },
+  { id: "l31", title: "Direct Mail Response - Wells", stage: "contacted", priority: "Medium", source: "Direct Mail", estimated_value: 40000, next_follow_up: "2024-04-11", tags: ["Seller"], contact_id: "c7", property_id: null, assigned_user: "u4", created_at: "2024-04-04" },
+  { id: "l32", title: "Zillow Seller Lead - Buda", stage: "contacted", priority: "Low", source: "Zillow", estimated_value: 55000, next_follow_up: "2024-04-13", tags: ["Listing"], contact_id: "c9", property_id: null, assigned_user: "u1", created_at: "2024-04-05" },
+  { id: "l33", title: "Email Response - Green", stage: "contacted", priority: "Medium", source: "Email Campaign", estimated_value: 0, next_follow_up: "2024-04-12", tags: ["Buyer"], contact_id: "c8", property_id: null, assigned_user: "u3", created_at: "2024-04-06" },
+  { id: "l34", title: "Radio Ad Response", stage: "contacted", priority: "Low", source: "Radio Ad", estimated_value: 28000, next_follow_up: "2024-04-15", tags: ["Seller"], contact_id: "c1", property_id: null, assigned_user: "u2", created_at: "2024-04-07" },
+  // More tour
+  { id: "l35", title: "Tour Scheduled - Manor Area", stage: "tour", priority: "High", source: "Referral", estimated_value: 58000, next_follow_up: "2024-04-09", tags: ["Wholesale"], contact_id: "c6", property_id: null, assigned_user: "u1", created_at: "2024-03-28" },
+  { id: "l36", title: "Property Walkthrough - 78702", stage: "tour", priority: "Medium", source: "Direct Mail", estimated_value: 72000, next_follow_up: "2024-04-10", tags: ["Flip"], contact_id: "c3", property_id: null, assigned_user: "u4", created_at: "2024-04-01" },
+  { id: "l37", title: "Investor Tour - Downtown", stage: "tour", priority: "High", source: "Networking", estimated_value: 90000, next_follow_up: "2024-04-08", tags: ["Investor", "Hot"], contact_id: "c8", property_id: null, assigned_user: "u2", created_at: "2024-04-03" },
+  { id: "l38", title: "Seller Showing - Pflugerville", stage: "tour", priority: "Medium", source: "Cold Call", estimated_value: 44000, next_follow_up: "2024-04-11", tags: ["Seller"], contact_id: "c9", property_id: null, assigned_user: "u3", created_at: "2024-04-05" },
+  { id: "l39", title: "Multi-Unit Tour - E. Riverside", stage: "tour", priority: "High", source: "Website", estimated_value: 120000, next_follow_up: "2024-04-09", tags: ["Multi-Family", "Hot"], contact_id: "c2", property_id: null, assigned_user: "u1", created_at: "2024-04-06" },
+  { id: "l40", title: "Commercial Tour - N. Austin", stage: "tour", priority: "Low", source: "Referral", estimated_value: 85000, next_follow_up: "2024-04-14", tags: ["Commercial"], contact_id: "c10", property_id: null, assigned_user: "u4", created_at: "2024-04-07" },
+  // More offer
+  { id: "l41", title: "Counter Offer - Barton Hills", stage: "offer", priority: "High", source: "Direct Mail", estimated_value: 68000, next_follow_up: "2024-04-08", tags: ["Wholesale", "Counter"], contact_id: "c1", property_id: null, assigned_user: "u2", created_at: "2024-04-01" },
+  { id: "l42", title: "Verbal Offer - Slaughter Ln", stage: "offer", priority: "Medium", source: "Cold Call", estimated_value: 52000, next_follow_up: "2024-04-10", tags: ["Seller"], contact_id: "c9", property_id: null, assigned_user: "u1", created_at: "2024-04-04" },
+  { id: "l43", title: "Written Offer - S. Congress", stage: "offer", priority: "Urgent", source: "Referral", estimated_value: 95000, next_follow_up: "2024-04-08", tags: ["Flip", "Hot"], contact_id: "c5", property_id: null, assigned_user: "u3", created_at: "2024-04-06" },
+  { id: "l44", title: "LOI Submitted - Industrial", stage: "offer", priority: "Medium", source: "Website", estimated_value: 130000, next_follow_up: "2024-04-11", tags: ["Commercial", "LOI"], contact_id: "c10", property_id: null, assigned_user: "u4", created_at: "2024-04-07" },
+  // More contract
+  { id: "l45", title: "Under Contract - Wells Branch", stage: "contract", priority: "High", source: "Direct Mail", estimated_value: 48000, next_follow_up: "2024-04-15", tags: ["Wholesale"], contact_id: "c6", property_id: null, assigned_user: "u2", created_at: "2024-03-20" },
+  { id: "l46", title: "Pending Close - Round Rock", stage: "contract", priority: "Medium", source: "Referral", estimated_value: 62000, next_follow_up: "2024-04-18", tags: ["Flip"], contact_id: "c8", property_id: null, assigned_user: "u3", created_at: "2024-03-22" },
+  // More closed
+  { id: "l47", title: "Closed - Cedar Park Duplex", stage: "closed", priority: "Medium", source: "Direct Mail", estimated_value: 72000, next_follow_up: null, tags: ["Wholesale", "Closed"], contact_id: "c3", property_id: null, assigned_user: "u1", created_at: "2024-02-01" },
+  { id: "l48", title: "Closed - Pflugerville SFH", stage: "closed", priority: "High", source: "Referral", estimated_value: 58000, next_follow_up: null, tags: ["Flip", "Closed"], contact_id: "c9", property_id: "p9", assigned_user: "u4", created_at: "2024-02-15" },
+  { id: "l49", title: "Closed - Buda Land Deal", stage: "closed", priority: "Low", source: "Website", estimated_value: 35000, next_follow_up: null, tags: ["Land", "Closed"], contact_id: "c7", property_id: null, assigned_user: "u2", created_at: "2024-03-01" },
+  { id: "l50", title: "Closed - Georgetown Fix&Flip", stage: "closed", priority: "High", source: "Cold Call", estimated_value: 92000, next_follow_up: null, tags: ["Flip", "Closed"], contact_id: "c1", property_id: null, assigned_user: "u1", created_at: "2024-03-10" },
+  { id: "l51", title: "Closed - South Austin Condo", stage: "closed", priority: "Medium", source: "Zillow", estimated_value: 28000, next_follow_up: null, tags: ["Assignment", "Closed"], contact_id: "c2", property_id: null, assigned_user: "u3", created_at: "2024-03-15" },
+  { id: "l52", title: "Closed - Leander SFH", stage: "closed", priority: "Medium", source: "Direct Mail", estimated_value: 45000, next_follow_up: null, tags: ["Wholesale", "Closed"], contact_id: "c5", property_id: null, assigned_user: "u4", created_at: "2024-03-20" },
+  { id: "l53", title: "Closed - Kyle Investment", stage: "closed", priority: "High", source: "Referral", estimated_value: 67000, next_follow_up: null, tags: ["Flip", "Closed"], contact_id: "c8", property_id: null, assigned_user: "u2", created_at: "2024-03-25" },
+  { id: "l54", title: "Closed - Manor Wholesale", stage: "closed", priority: "Medium", source: "Driving for Dollars", estimated_value: 41000, next_follow_up: null, tags: ["Wholesale", "Closed"], contact_id: "c6", property_id: null, assigned_user: "u1", created_at: "2024-04-01" },
 ];
 
 export const tasks: Task[] = [
@@ -151,7 +212,12 @@ export const tasks: Task[] = [
   { id: "t4", title: "Submit offer - Congress Ave Condo", description: "Prepare and submit assignment contract", completed: false, due_date: "2024-04-08", priority: "High", assigned_user: "u1", linked_entity: { type: "lead", id: "l3", name: "Congress Ave Condo Assignment" }, created_at: "2024-04-03" },
   { id: "t5", title: "Research pre-foreclosure timeline", description: "Check county records for Chen property foreclosure status", completed: false, due_date: "2024-04-10", priority: "High", assigned_user: "u4", linked_entity: { type: "lead", id: "l6", name: "Pre-Foreclosure Lead - Chen" }, created_at: "2024-04-05" },
   { id: "t6", title: "Update CRM with new buyer criteria", description: "Robert wants 4+ beds, under $500k, Austin area", completed: false, due_date: "2024-04-12", priority: "Low", assigned_user: "u3", linked_entity: { type: "contact", id: "c4", name: "Robert Johnson" }, created_at: "2024-04-06" },
-  { id: "t7", title: "Order title search - Oak Ridge", description: "Contact Patricia at title company", completed: false, due_date: "2024-04-07", priority: "High", assigned_user: "u1", linked_entity: { type: "property", id: "p1", name: "4521 Oak Ridge Dr" }, created_at: "2024-03-28" },
+  { id: "t7", title: "Order title search - Oak Ridge", description: "Contact Patricia at title company", completed: false, due_date: "2024-04-06", priority: "High", assigned_user: "u1", linked_entity: { type: "property", id: "p1", name: "4521 Oak Ridge Dr" }, created_at: "2024-03-28" },
+  { id: "t8", title: "Review inspection report - Elm St", description: "Check for major issues flagged by inspector", completed: false, due_date: "2024-04-08", priority: "Medium", assigned_user: "u2", linked_entity: { type: "property", id: "p2", name: "912 Elm Street" }, created_at: "2024-04-04" },
+  { id: "t9", title: "Prepare closing docs - Oak Ridge", description: "Coordinate with title company for closing package", completed: false, due_date: "2024-04-09", priority: "High", assigned_user: "u1", linked_entity: { type: "lead", id: "l1", name: "Oak Ridge Wholesale Deal" }, created_at: "2024-04-05" },
+  { id: "t10", title: "Follow up with Sandra Lee", description: "She texted back interested - call to schedule meeting", completed: false, due_date: "2024-04-08", priority: "High", assigned_user: "u4", linked_entity: { type: "lead", id: "l14", name: "Divorce Sale - Sandra Lee" }, created_at: "2024-04-06" },
+  { id: "t11", title: "Send assignment contract to buyer", description: "James Whitfield is the end buyer for Congress Ave deal", completed: false, due_date: "2024-04-09", priority: "Medium", assigned_user: "u1", linked_entity: { type: "lead", id: "l3", name: "Congress Ave Condo Assignment" }, created_at: "2024-04-07" },
+  { id: "t12", title: "Pull skip trace for Rundberg lead", description: "Need owner contact info for absentee property", completed: false, due_date: "2024-04-10", priority: "Low", assigned_user: "u1", linked_entity: { type: "lead", id: "l17", name: "Absentee Owner - Rundberg" }, created_at: "2024-04-07" },
 ];
 
 export const notes: Note[] = [
@@ -176,14 +242,18 @@ export const documents: DocFile[] = [
 ];
 
 export const activities: ActivityItem[] = [
-  { id: "a1", action: "moved lead to Under Contract", user: "Alex Rivera", entity: "Oak Ridge Wholesale Deal", entity_type: "lead", timestamp: "2024-04-07T16:30:00" },
-  { id: "a2", action: "added a note", user: "Jordan Kim", entity: "Elm Street Flip Opportunity", entity_type: "lead", timestamp: "2024-04-07T14:15:00" },
-  { id: "a3", action: "created new lead", user: "Taylor Brooks", entity: "Pre-Foreclosure Lead - Chen", entity_type: "lead", timestamp: "2024-04-07T11:00:00" },
-  { id: "a4", action: "completed task", user: "Alex Rivera", entity: "Send comps to James Whitfield", entity_type: "task", timestamp: "2024-04-07T09:45:00" },
-  { id: "a5", action: "uploaded document", user: "Alex Rivera", entity: "Purchase_Agreement_OakRidge.pdf", entity_type: "lead", timestamp: "2024-04-06T15:20:00" },
-  { id: "a6", action: "scheduled meeting", user: "Sam Chen", entity: "Buyer Consultation - Robert", entity_type: "contact", timestamp: "2024-04-06T13:00:00" },
-  { id: "a7", action: "updated property details", user: "Jordan Kim", entity: "912 Elm Street", entity_type: "property", timestamp: "2024-04-06T10:30:00" },
-  { id: "a8", action: "changed lead priority to Urgent", user: "Taylor Brooks", entity: "Pre-Foreclosure Lead - Chen", entity_type: "lead", timestamp: "2024-04-05T17:00:00" },
+  { id: "a1", action: "moved lead to Under Contract", user: "Alex Rivera", user_id: "u1", entity: "Oak Ridge Wholesale Deal", entity_id: "l1", entity_type: "lead", timestamp: "2024-04-08T08:30:00" },
+  { id: "a2", action: "submitted an offer on", user: "Sam Chen", user_id: "u3", entity: "Written Offer - S. Congress", entity_id: "l43", entity_type: "lead", timestamp: "2024-04-08T07:45:00" },
+  { id: "a3", action: "added a note on", user: "Jordan Kim", user_id: "u2", entity: "Elm Street Flip Opportunity", entity_id: "l2", entity_type: "lead", timestamp: "2024-04-07T16:15:00" },
+  { id: "a4", action: "created new lead", user: "Taylor Brooks", user_id: "u4", entity: "Divorce Sale - Sandra Lee", entity_id: "l14", entity_type: "lead", timestamp: "2024-04-07T14:30:00" },
+  { id: "a5", action: "completed task", user: "Alex Rivera", user_id: "u1", entity: "Send comps to James Whitfield", entity_id: "t3", entity_type: "task", timestamp: "2024-04-07T11:20:00" },
+  { id: "a6", action: "uploaded document to", user: "Alex Rivera", user_id: "u1", entity: "Oak Ridge Wholesale Deal", entity_id: "l1", entity_type: "lead", timestamp: "2024-04-07T09:45:00" },
+  { id: "a7", action: "scheduled meeting for", user: "Sam Chen", user_id: "u3", entity: "Buyer Consultation - Robert", entity_id: "m3", entity_type: "contact", timestamp: "2024-04-06T15:00:00" },
+  { id: "a8", action: "updated property details for", user: "Jordan Kim", user_id: "u2", entity: "912 Elm Street", entity_id: "p2", entity_type: "property", timestamp: "2024-04-06T13:30:00" },
+  { id: "a9", action: "changed priority to Urgent on", user: "Taylor Brooks", user_id: "u4", entity: "Pre-Foreclosure Lead - Chen", entity_id: "l6", entity_type: "lead", timestamp: "2024-04-06T10:00:00" },
+  { id: "a10", action: "closed deal on", user: "Alex Rivera", user_id: "u1", entity: "Manor Wholesale", entity_id: "l54", entity_type: "lead", timestamp: "2024-04-05T17:00:00" },
+  { id: "a11", action: "left voicemail for contact on", user: "Jordan Kim", user_id: "u2", entity: "Anderson Mill Listing", entity_id: "l10", entity_type: "lead", timestamp: "2024-04-05T14:20:00" },
+  { id: "a12", action: "created new lead", user: "Alex Rivera", user_id: "u1", entity: "Referral - Torres Network", entity_id: "l20", entity_type: "lead", timestamp: "2024-04-05T11:00:00" },
 ];
 
 export function getUserById(id: string) {
@@ -206,6 +276,28 @@ export function formatCurrency(value: number) {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value);
 }
 
+export function formatCompactCurrency(value: number) {
+  if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
+  if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
+  return `$${value}`;
+}
+
 export function getStageLabel(stageId: StageId) {
   return PIPELINE_STAGES.find(s => s.id === stageId)?.label ?? stageId;
+}
+
+export function timeAgo(timestamp: string): string {
+  const now = new Date("2024-04-08T09:00:00");
+  const then = new Date(timestamp);
+  const diffMs = now.getTime() - then.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  const diffHrs = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMin < 1) return "just now";
+  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffHrs < 24) return `${diffHrs}h ago`;
+  if (diffDays === 1) return "yesterday";
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return then.toLocaleDateString();
 }
