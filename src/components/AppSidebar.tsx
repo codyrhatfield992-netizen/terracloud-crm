@@ -8,11 +8,13 @@ import {
   Calendar,
   FileText,
   Settings,
+  Target,
 } from "lucide-react";
 
 const navItems = [
   { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
   { label: "Leads", path: "/leads", icon: Users },
+  { label: "LeadHunt", path: "/lead-hunt", icon: Target },
   { label: "Properties", path: "/properties", icon: Building2 },
   { label: "Contacts", path: "/contacts", icon: Contact2 },
   { label: "Tasks", path: "/tasks", icon: CheckSquare },
