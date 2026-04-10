@@ -327,8 +327,95 @@ export default function Dashboard() {
               })}
             </div>
           </div>
+          {/* LeadHunt Performance */}
+          <div className="lg:col-span-3 bg-card border border-border rounded-lg p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Target className="h-4 w-4 text-primary" />
+                </div>
+                <h2 className="text-lg font-medium text-foreground">LeadHunt Performance</h2>
+              </div>
+              <Link to="/lead-hunt" className="text-xs text-primary hover:text-primary/80 transition-colors">View All Leads →</Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Chart */}
+              <div>
+                <p className="text-xs text-muted-foreground mb-3 font-medium">Leads Found (Last 7 Days)</p>
+                <div className="h-[160px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={leadHuntDays}>
+                      <XAxis dataKey="day" tick={{ fill: "hsl(0 0% 45%)", fontSize: 10 }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fill: "hsl(0 0% 45%)", fontSize: 10 }} axisLine={false} tickLine={false} allowDecimals={false} width={20} />
+                      <Tooltip
+                        content={({ active, payload, label }: any) => {
+                          if (!active || !payload?.length) return null;
+                          return (
+                            <div className="bg-card border border-border rounded-lg px-3 py-2 shadow-xl">
+                              <p className="text-xs text-muted-foreground">{label}</p>
+                              <p className="text-sm font-semibold text-foreground">{payload[0].value} leads</p>
+                            </div>
+                          );
+                        }}
+                      />
+                      <Line type="monotone" dataKey="leads" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ fill: "hsl(var(--primary))", r: 3 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Conversion Funnel */}
+              <div>
+                <p className="text-xs text-muted-foreground mb-3 font-medium">Conversion Funnel</p>
+                <div className="space-y-2">
+                  {[
+                    { label: "Found", value: totalRedditLeads, pct: 100 },
+                    { label: "Reviewed", value: totalRedditLeads - pendingReddit, pct: totalRedditLeads > 0 ? Math.round(((totalRedditLeads - pendingReddit) / totalRedditLeads) * 100) : 0 },
+                    { label: "Contacted", value: contactedReddit + convertedReddit, pct: totalRedditLeads > 0 ? Math.round(((contactedReddit + convertedReddit) / totalRedditLeads) * 100) : 0 },
+                    { label: "Converted", value: convertedReddit, pct: conversionRate },
+                  ].map(step => (
+                    <div key={step.label}>
+                      <div className="flex items-center justify-between text-xs mb-1">
+                        <span className="text-muted-foreground">{step.label}</span>
+                        <span className="text-foreground font-medium">{step.value} <span className="text-muted-foreground">({step.pct}%)</span></span>
+                      </div>
+                      <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                        <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${step.pct}%` }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quick Stats */}
+              <div className="space-y-4">
+                <p className="text-xs text-muted-foreground font-medium">Quick Stats</p>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Leads found today</span>
+                    <span className="text-sm font-semibold text-foreground">3</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Conversion rate</span>
+                    <span className="text-sm font-semibold text-foreground">{conversionRate}%</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Best keyword</span>
+                    <span className="text-sm font-semibold text-primary">{bestKeyword?.[0] ?? "—"}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Top subreddit</span>
+                    <span className="text-sm font-semibold text-primary">{topSubreddit?.[0] ?? "—"}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </AppLayout>
+  );
+}
   );
 }
