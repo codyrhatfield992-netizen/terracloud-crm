@@ -379,31 +379,20 @@ export default function LeadHunt() {
     setFormData(prev => ({ ...prev, [field]: value }));
 
   return (
-    <div className="flex h-screen bg-background">
-      <AppSidebar />
-      <div className="flex-1 ml-60">
-        <TopBar />
-
-        <main className="p-6 space-y-6 overflow-y-auto" style={{ height: "calc(100vh - 56px)" }}>
+    <AppLayout>
+      <div className="space-y-8 max-w-[1200px]">
           {/* Page Header */}
           <div>
-            <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-              <Target className="h-5 w-5 text-primary" /> LeadHunt
-            </h1>
-            <p className="text-xs text-muted-foreground">Automatically find qualified leads from Reddit discussions</p>
+            <h1 className="text-xl font-semibold text-foreground tracking-tight">LeadHunt</h1>
+            <p className="text-sm text-muted-foreground mt-1">Find qualified leads from Reddit discussions</p>
           </div>
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {stats.map(s => (
-              <Card key={s.label}>
-                <CardContent className="p-4 flex items-center gap-3">
-                  <s.icon className={`h-8 w-8 ${s.color}`} />
-                  <div>
-                    <p className="text-2xl font-bold text-foreground">{s.value}</p>
-                    <p className="text-xs text-muted-foreground">{s.label}</p>
-                  </div>
-                </CardContent>
-              </Card>
+              <div key={s.label} className="bg-card border border-border rounded-md p-5">
+                <p className="text-xs text-muted-foreground mb-3">{s.label}</p>
+                <p className="text-3xl font-semibold text-foreground tracking-tight">{s.value}</p>
+              </div>
             ))}
           </div>
 
@@ -550,8 +539,8 @@ export default function LeadHunt() {
               </Card>
             </TabsContent>
           </Tabs>
-        </main>
       </div>
+    </AppLayout>
 
       {/* Source Modal (Add/Edit) */}
       <Dialog open={sourceModalOpen} onOpenChange={setSourceModalOpen}>
