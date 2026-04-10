@@ -6,18 +6,19 @@ interface StatusBadgeProps {
   className?: string;
 }
 
-const variantClasses: Record<string, string> = {
-  default: "bg-secondary text-secondary-foreground",
-  success: "bg-success/15 text-success",
-  warning: "bg-warning/15 text-warning",
-  destructive: "bg-destructive/15 text-destructive",
-  outline: "border border-border text-muted-foreground",
-  primary: "bg-primary/15 text-primary",
+const dotColor: Record<string, string> = {
+  default: "bg-muted-foreground",
+  success: "bg-success",
+  warning: "bg-warning",
+  destructive: "bg-destructive",
+  outline: "bg-muted-foreground",
+  primary: "bg-primary",
 };
 
 export default function StatusBadge({ children, variant = "default", className = "" }: StatusBadgeProps) {
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${variantClasses[variant]} ${className}`}>
+    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium bg-secondary text-muted-foreground border border-border ${className}`}>
+      <span className={`h-1.5 w-1.5 rounded-full ${dotColor[variant] ?? dotColor.default}`} />
       {children}
     </span>
   );

@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import AppSidebar from "@/components/AppSidebar";
-import TopBar from "@/components/TopBar";
+import AppLayout from "@/components/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -33,9 +32,9 @@ import { toast } from "sonner";
 
 function confidenceBadge(score: number) {
   const pct = Math.round(score * 100);
-  if (score >= 0.8) return <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">{pct}%</Badge>;
-  if (score >= 0.6) return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">{pct}%</Badge>;
-  return <Badge variant="secondary">{pct}%</Badge>;
+  if (score >= 0.8) return <Badge className="bg-secondary text-foreground border border-border gap-1"><span className="h-1.5 w-1.5 rounded-full bg-success" />{pct}%</Badge>;
+  if (score >= 0.6) return <Badge className="bg-secondary text-foreground border border-border gap-1"><span className="h-1.5 w-1.5 rounded-full bg-warning" />{pct}%</Badge>;
+  return <Badge className="bg-secondary text-muted-foreground border border-border gap-1"><span className="h-1.5 w-1.5 rounded-full bg-muted-foreground" />{pct}%</Badge>;
 }
 
 function sentimentBadge(s: string) {
@@ -232,10 +231,10 @@ export default function LeadHunt() {
   const converted = allRedditLeads.filter(l => l.status === "converted");
 
   const stats = [
-    { label: "Total Leads Found", value: allRedditLeads.length, icon: Target, color: "text-primary" },
-    { label: "Pending Review", value: pending.length, icon: Clock, color: "text-yellow-400" },
-    { label: "Contacted", value: contacted.length, icon: UserCheck, color: "text-blue-400" },
-    { label: "Converted", value: converted.length, icon: CheckCircle2, color: "text-emerald-400" },
+    { label: "Total Leads Found", value: allRedditLeads.length, icon: Target },
+    { label: "Pending Review", value: pending.length, icon: Clock },
+    { label: "Contacted", value: contacted.length, icon: UserCheck },
+    { label: "Converted", value: converted.length, icon: CheckCircle2 },
   ];
 
   function handleOpenCreateLead(lead: RedditLead) {
@@ -379,31 +378,20 @@ export default function LeadHunt() {
     setFormData(prev => ({ ...prev, [field]: value }));
 
   return (
-    <div className="flex h-screen bg-background">
-      <AppSidebar />
-      <div className="flex-1 ml-60">
-        <TopBar />
-
-        <main className="p-6 space-y-6 overflow-y-auto" style={{ height: "calc(100vh - 56px)" }}>
+    <AppLayout>
+      <div className="space-y-8 max-w-[1200px]">
           {/* Page Header */}
           <div>
-            <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-              <Target className="h-5 w-5 text-primary" /> LeadHunt
-            </h1>
-            <p className="text-xs text-muted-foreground">Automatically find qualified leads from Reddit discussions</p>
+            <h1 className="text-xl font-semibold text-foreground tracking-tight">LeadHunt</h1>
+            <p className="text-sm text-muted-foreground mt-1">Find qualified leads from Reddit discussions</p>
           </div>
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {stats.map(s => (
-              <Card key={s.label}>
-                <CardContent className="p-4 flex items-center gap-3">
-                  <s.icon className={`h-8 w-8 ${s.color}`} />
-                  <div>
-                    <p className="text-2xl font-bold text-foreground">{s.value}</p>
-                    <p className="text-xs text-muted-foreground">{s.label}</p>
-                  </div>
-                </CardContent>
-              </Card>
+              <div key={s.label} className="bg-card border border-border rounded-md p-5">
+                <p className="text-xs text-muted-foreground mb-3">{s.label}</p>
+                <p className="text-3xl font-semibold text-foreground tracking-tight">{s.value}</p>
+              </div>
             ))}
           </div>
 
@@ -536,7 +524,7 @@ export default function LeadHunt() {
                         </TableCell>
                         <TableCell>{sentimentBadge(t.sentiment)}</TableCell>
                         <TableCell>
-                          {t.processed ? <CheckCircle2 className="h-4 w-4 text-emerald-400" /> : <Clock className="h-4 w-4 text-muted-foreground" />}
+                          {t.processed ? <CheckCircle2 className="h-4 w-4 text-success" /> : <Clock className="h-4 w-4 text-muted-foreground" />}
                         </TableCell>
                         <TableCell>
                           <a href={t.url} target="_blank" rel="noreferrer">
@@ -550,9 +538,7 @@ export default function LeadHunt() {
               </Card>
             </TabsContent>
           </Tabs>
-        </main>
       </div>
-
       {/* Source Modal (Add/Edit) */}
       <Dialog open={sourceModalOpen} onOpenChange={setSourceModalOpen}>
         <DialogContent>
@@ -733,6 +719,6 @@ export default function LeadHunt() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </AppLayout>
   );
 }
