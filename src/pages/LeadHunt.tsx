@@ -540,8 +540,6 @@ export default function LeadHunt() {
             </TabsContent>
           </Tabs>
       </div>
-    </AppLayout>
-
       {/* Source Modal (Add/Edit) */}
       <Dialog open={sourceModalOpen} onOpenChange={setSourceModalOpen}>
         <DialogContent>
@@ -722,6 +720,6 @@ export default function LeadHunt() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </AppLayout>
   );
 }
