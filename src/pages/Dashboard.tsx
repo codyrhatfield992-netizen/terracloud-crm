@@ -1,5 +1,5 @@
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
-import { Check, Clock, TrendingUp, Users, ArrowUpRight, Calendar } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LineChart, Line } from "recharts";
+import { Check, Clock, TrendingUp, Users, ArrowUpRight, Calendar, Target } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
 import StatusBadge, { priorityVariant } from "@/components/StatusBadge";
@@ -7,6 +7,7 @@ import {
   leads, tasks, activities, contacts, properties,
   PIPELINE_STAGES, getUserById, getContactById, getPropertyById,
   formatCurrency, formatCompactCurrency, getStageLabel, timeAgo,
+  redditLeads, redditThreads,
   type Lead,
 } from "@/data/mockData";
 
