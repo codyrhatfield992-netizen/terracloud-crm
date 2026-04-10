@@ -18,8 +18,12 @@ import StatusBadge from "@/components/StatusBadge";
 import {
   Target, TrendingUp, Clock, UserCheck, CheckCircle2,
   ChevronDown, ExternalLink, MessageSquare, XCircle, Plus,
-  Pencil, Trash2, Copy
+  Pencil, Trash2, Copy, X
 } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   redditLeads as initialRedditLeads, redditSources, redditThreads, properties, leads as crmLeads,
   PIPELINE_STAGES, users,
@@ -196,8 +200,17 @@ export default function LeadHunt() {
   const navigate = useNavigate();
   const [sortBy, setSortBy] = useState<"confidence" | "date">("confidence");
   const [sources, setSources] = useState<RedditSource[]>(redditSources);
-  const [addSourceOpen, setAddSourceOpen] = useState(false);
-  const [newSource, setNewSource] = useState({ subreddit: "", keywords: "", frequency: "daily" as const });
+
+  // Source modal state
+  const [sourceModalOpen, setSourceModalOpen] = useState(false);
+  const [editingSource, setEditingSource] = useState<RedditSource | null>(null);
+  const [sourceForm, setSourceForm] = useState({ subreddit: "", keywords: [] as string[], frequency: "daily", active: true });
+  const [keywordInput, setKeywordInput] = useState("");
+  const [sourceErrors, setSourceErrors] = useState<{ subreddit?: string; keywords?: string }>({});
+
+  // Delete confirmation
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
   // Stateful reddit leads
   const [allRedditLeads, setAllRedditLeads] = useState<RedditLead[]>(initialRedditLeads);
@@ -285,21 +298,81 @@ export default function LeadHunt() {
     setTimeout(() => navigate(`/leads`), 500);
   }
 
-  function handleAddSource() {
-    if (!newSource.subreddit) return;
-    const src: RedditSource = {
-      id: `rs-${Date.now()}`,
-      subreddit: newSource.subreddit.startsWith("r/") ? newSource.subreddit : `r/${newSource.subreddit}`,
-      keywords: newSource.keywords.split(",").map(k => k.trim()).filter(Boolean),
-      scan_frequency: newSource.frequency,
-      last_scanned: new Date().toISOString(),
-      active: true,
-      created_at: new Date().toISOString(),
-    };
-    setSources(prev => [...prev, src]);
-    setNewSource({ subreddit: "", keywords: "", frequency: "daily" });
-    setAddSourceOpen(false);
-    toast.success("Source added");
+  function openSourceModal(source?: RedditSource) {
+    if (source) {
+      setEditingSource(source);
+      setSourceForm({
+        subreddit: source.subreddit.replace(/^r\//, ""),
+        keywords: [...source.keywords],
+        frequency: source.scan_frequency,
+        active: source.active,
+      });
+    } else {
+      setEditingSource(null);
+      setSourceForm({ subreddit: "", keywords: [], frequency: "daily", active: true });
+    }
+    setKeywordInput("");
+    setSourceErrors({});
+    setSourceModalOpen(true);
+  }
+
+  function addKeyword() {
+    const kw = keywordInput.trim();
+    if (!kw || sourceForm.keywords.includes(kw)) return;
+    setSourceForm(p => ({ ...p, keywords: [...p.keywords, kw] }));
+    setKeywordInput("");
+    setSourceErrors(p => ({ ...p, keywords: undefined }));
+  }
+
+  function removeKeyword(kw: string) {
+    setSourceForm(p => ({ ...p, keywords: p.keywords.filter(k => k !== kw) }));
+  }
+
+  function handleSaveSource() {
+    const errors: typeof sourceErrors = {};
+    if (!sourceForm.subreddit.trim()) errors.subreddit = "Subreddit is required";
+    if (sourceForm.keywords.length === 0) errors.keywords = "At least 1 keyword is required";
+    if (Object.keys(errors).length) { setSourceErrors(errors); return; }
+
+    const sub = sourceForm.subreddit.startsWith("r/") ? sourceForm.subreddit : `r/${sourceForm.subreddit}`;
+
+    if (editingSource) {
+      setSources(prev => prev.map(s => s.id === editingSource.id ? {
+        ...s,
+        subreddit: sub,
+        keywords: sourceForm.keywords,
+        scan_frequency: sourceForm.frequency as any,
+        active: sourceForm.active,
+      } : s));
+      toast.success("Source updated");
+    } else {
+      const src: RedditSource = {
+        id: `rs-${Date.now()}`,
+        subreddit: sub,
+        keywords: sourceForm.keywords,
+        scan_frequency: sourceForm.frequency as any,
+        last_scanned: new Date().toISOString(),
+        active: sourceForm.active,
+        created_at: new Date().toISOString(),
+      };
+      setSources(prev => [...prev, src]);
+      toast.success("Source added");
+    }
+    setSourceModalOpen(false);
+  }
+
+  function confirmDeleteSource(id: string) {
+    setDeleteTargetId(id);
+    setDeleteConfirmOpen(true);
+  }
+
+  function executeDeleteSource() {
+    if (deleteTargetId) {
+      setSources(prev => prev.filter(s => s.id !== deleteTargetId));
+      toast("Source deleted");
+    }
+    setDeleteConfirmOpen(false);
+    setDeleteTargetId(null);
   }
 
   const updateField = (field: keyof CreateLeadFormData, value: string) =>
@@ -391,10 +464,9 @@ export default function LeadHunt() {
               </div>
             </TabsContent>
 
-            {/* Sources */}
             <TabsContent value="sources" className="space-y-4">
               <div className="flex justify-end">
-                <Button size="sm" onClick={() => setAddSourceOpen(true)}><Plus className="h-3 w-3 mr-1" /> Add Source</Button>
+                <Button size="sm" onClick={() => openSourceModal()}><Plus className="h-3 w-3 mr-1" /> Add Source</Button>
               </div>
               <Card>
                 <Table>
@@ -427,8 +499,8 @@ export default function LeadHunt() {
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-1">
-                            <Button size="icon" variant="ghost" className="h-7 w-7"><Pencil className="h-3 w-3" /></Button>
-                            <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => { setSources(prev => prev.filter(x => x.id !== s.id)); toast("Source deleted"); }}><Trash2 className="h-3 w-3" /></Button>
+                            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openSourceModal(s)}><Pencil className="h-3 w-3" /></Button>
+                            <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => confirmDeleteSource(s.id)}><Trash2 className="h-3 w-3" /></Button>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -481,31 +553,102 @@ export default function LeadHunt() {
         </main>
       </div>
 
-      {/* Add Source Modal */}
-      <Dialog open={addSourceOpen} onOpenChange={setAddSourceOpen}>
+      {/* Source Modal (Add/Edit) */}
+      <Dialog open={sourceModalOpen} onOpenChange={setSourceModalOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Add Reddit Source</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>{editingSource ? "Edit Reddit Source" : "Add Reddit Source"}</DialogTitle>
+          </DialogHeader>
           <div className="space-y-4">
-            <div><Label>Subreddit</Label><Input placeholder="r/realestate" value={newSource.subreddit} onChange={e => setNewSource(p => ({ ...p, subreddit: e.target.value }))} /></div>
-            <div><Label>Keywords (comma-separated)</Label><Input placeholder="investment property, first home" value={newSource.keywords} onChange={e => setNewSource(p => ({ ...p, keywords: e.target.value }))} /></div>
+            <div>
+              <Label>Subreddit</Label>
+              <div className="flex items-center gap-0">
+                <span className="inline-flex items-center h-9 px-3 rounded-l-md border border-r-0 border-border bg-muted text-sm text-muted-foreground">r/</span>
+                <Input
+                  className="rounded-l-none"
+                  placeholder="realestate"
+                  value={sourceForm.subreddit}
+                  onChange={e => { setSourceForm(p => ({ ...p, subreddit: e.target.value })); setSourceErrors(p => ({ ...p, subreddit: undefined })); }}
+                />
+              </div>
+              {sourceErrors.subreddit && <p className="text-xs text-destructive mt-1">{sourceErrors.subreddit}</p>}
+            </div>
+
+            <div>
+              <Label>Keywords</Label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Type a keyword and press Enter"
+                  value={keywordInput}
+                  onChange={e => setKeywordInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addKeyword(); } }}
+                />
+                <Button type="button" size="sm" variant="outline" onClick={addKeyword}>Add</Button>
+              </div>
+              {sourceForm.keywords.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {sourceForm.keywords.map(kw => (
+                    <Badge key={kw} variant="secondary" className="gap-1 pr-1">
+                      {kw}
+                      <button onClick={() => removeKeyword(kw)} className="ml-0.5 rounded-full hover:bg-muted-foreground/20 p-0.5">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              {sourceErrors.keywords && <p className="text-xs text-destructive mt-1">{sourceErrors.keywords}</p>}
+            </div>
+
             <div>
               <Label>Scan Frequency</Label>
-              <Select value={newSource.frequency} onValueChange={v => setNewSource(p => ({ ...p, frequency: v as any }))}>
+              <Select value={sourceForm.frequency} onValueChange={v => setSourceForm(p => ({ ...p, frequency: v }))}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="hourly">Hourly</SelectItem>
+                  <SelectItem value="hourly">Every hour</SelectItem>
+                  <SelectItem value="2hours">Every 2 hours</SelectItem>
+                  <SelectItem value="6hours">Every 6 hours</SelectItem>
+                  <SelectItem value="12hours">Every 12 hours</SelectItem>
                   <SelectItem value="daily">Daily</SelectItem>
-                  <SelectItem value="weekly">Weekly</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="flex items-center justify-between">
+              <Label>Active</Label>
+              <Switch checked={sourceForm.active} onCheckedChange={checked => setSourceForm(p => ({ ...p, active: checked }))} />
+            </div>
+
+            {sourceForm.subreddit && (
+              <p className="text-xs text-muted-foreground">
+                We'll scan <span className="font-medium text-foreground">r/{sourceForm.subreddit}</span> for posts containing these keywords
+              </p>
+            )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setAddSourceOpen(false)}>Cancel</Button>
-            <Button onClick={handleAddSource}>Add Source</Button>
+            <Button variant="outline" onClick={() => setSourceModalOpen(false)}>Cancel</Button>
+            <Button onClick={handleSaveSource}>{editingSource ? "Save Changes" : "Add Source"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Source Confirmation */}
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Source</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure? This won't delete existing leads found from this source.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={executeDeleteSource} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Create Lead in CRM Modal */}
       <Dialog open={createLeadOpen} onOpenChange={setCreateLeadOpen}>

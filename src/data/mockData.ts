@@ -393,7 +393,7 @@ export interface RedditSource {
   id: string;
   subreddit: string;
   keywords: string[];
-  scan_frequency: "hourly" | "daily" | "weekly";
+  scan_frequency: "hourly" | "2hours" | "6hours" | "12hours" | "daily" | "weekly";
   last_scanned: string;
   active: boolean;
   created_at: string;
