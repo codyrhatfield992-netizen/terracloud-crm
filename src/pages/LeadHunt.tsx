@@ -1,13 +1,15 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import AppSidebar from "@/components/AppSidebar";
 import TopBar from "@/components/TopBar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -16,11 +18,12 @@ import StatusBadge from "@/components/StatusBadge";
 import {
   Target, TrendingUp, Clock, UserCheck, CheckCircle2,
   ChevronDown, ExternalLink, MessageSquare, XCircle, Plus,
-  Pencil, Trash2
+  Pencil, Trash2, Copy
 } from "lucide-react";
 import {
-  redditLeads, redditSources, redditThreads, properties,
-  type RedditLead, type RedditSource, type RedditThread
+  redditLeads as initialRedditLeads, redditSources, redditThreads, properties, leads as crmLeads,
+  PIPELINE_STAGES, users,
+  type RedditLead, type RedditSource, type RedditThread, type Lead
 } from "@/data/mockData";
 import { toast } from "sonner";
 
@@ -48,11 +51,75 @@ function getProperty(id: string | null) {
   return properties.find(p => p.id === id);
 }
 
+/* ───── Create Lead Modal ───── */
+interface CreateLeadFormData {
+  contactName: string;
+  email: string;
+  phone: string;
+  source: string;
+  stage: string;
+  notes: string;
+  propertyId: string;
+  assignedUser: string;
+  estimatedValue: string;
+}
+
+function buildInitialForm(lead: RedditLead): CreateLeadFormData {
+  const thread = getThread(lead.thread_id);
+  const prop = getProperty(lead.matched_property_id);
+  const username = thread?.author ?? "Unknown";
+
+  const notes = [
+    `Reddit Post: ${thread?.title ?? ""}`,
+    `URL: ${thread?.url ?? ""}`,
+    "",
+    "--- AI Summary ---",
+    lead.ai_summary,
+    "",
+    "--- Original Post ---",
+    thread?.body ?? "",
+    ...(prop ? ["", "--- Matched Property ---", `${prop.address}, ${prop.city} ${prop.state} ${prop.zip}`, `Asking: $${prop.asking_price.toLocaleString()} | ARV: $${prop.arv.toLocaleString()}`] : []),
+  ].join("\n");
+
+  return {
+    contactName: `Reddit User - ${username}`,
+    email: "",
+    phone: "",
+    source: `Reddit - ${thread?.subreddit ?? "unknown"}`,
+    stage: "new",
+    notes,
+    propertyId: lead.matched_property_id ?? "",
+    assignedUser: "u1",
+    estimatedValue: "0",
+  };
+}
+
 /* ───── Lead Card ───── */
-function LeadCard({ lead, showContacted }: { lead: RedditLead; showContacted?: boolean }) {
+function LeadCard({
+  lead,
+  showContacted,
+  onCreateLead,
+  onContact,
+  onIgnore,
+}: {
+  lead: RedditLead;
+  showContacted?: boolean;
+  onCreateLead?: (lead: RedditLead) => void;
+  onContact?: (lead: RedditLead) => void;
+  onIgnore?: (lead: RedditLead) => void;
+}) {
   const thread = getThread(lead.thread_id);
   const prop = getProperty(lead.matched_property_id);
   if (!thread) return null;
+
+  const handleCopyOutreach = () => {
+    if (!lead.outreach_message) return;
+    navigator.clipboard.writeText(lead.outreach_message).then(() => {
+      toast.success("Outreach message copied to clipboard");
+    }).catch(() => {
+      toast.error("Failed to copy message");
+    });
+  };
 
   return (
     <Card className="bg-card border-border hover:border-primary/40 transition-colors">
@@ -63,7 +130,7 @@ function LeadCard({ lead, showContacted }: { lead: RedditLead; showContacted?: b
             <a href={thread.url} target="_blank" rel="noreferrer" className="text-sm font-semibold text-foreground hover:text-primary transition-colors inline-flex items-center gap-1.5">
               {thread.title} <ExternalLink className="h-3 w-3 shrink-0" />
             </a>
-            <p className="text-xs text-muted-foreground mt-0.5">{thread.subreddit} · u/{thread.author}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{thread.subreddit} · {thread.author}</p>
           </div>
           {confidenceBadge(lead.confidence_score)}
         </div>
@@ -98,6 +165,9 @@ function LeadCard({ lead, showContacted }: { lead: RedditLead; showContacted?: b
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-2 bg-muted/30 rounded-md p-3">
               <p className="text-xs text-muted-foreground italic">{lead.outreach_message}</p>
+              <Button size="sm" variant="ghost" className="mt-2 h-7 text-xs" onClick={handleCopyOutreach}>
+                <Copy className="h-3 w-3 mr-1" /> Copy Outreach Message
+              </Button>
             </CollapsibleContent>
           </Collapsible>
         )}
@@ -105,13 +175,13 @@ function LeadCard({ lead, showContacted }: { lead: RedditLead; showContacted?: b
         {/* Actions */}
         {lead.status === "pending" && (
           <div className="flex items-center gap-2 pt-1">
-            <Button size="sm" onClick={() => toast.success("Lead created in CRM")}>
-              <Plus className="h-3 w-3 mr-1" /> Create Lead
+            <Button size="sm" onClick={() => onCreateLead?.(lead)}>
+              <Plus className="h-3 w-3 mr-1" /> Create Lead in CRM
             </Button>
-            <Button size="sm" variant="outline" onClick={() => toast.success("Marked as contacted")}>
+            <Button size="sm" variant="outline" onClick={() => onContact?.(lead)}>
               <UserCheck className="h-3 w-3 mr-1" /> Contact
             </Button>
-            <Button size="sm" variant="ghost" className="text-muted-foreground" onClick={() => toast("Lead ignored")}>
+            <Button size="sm" variant="ghost" className="text-muted-foreground" onClick={() => onIgnore?.(lead)}>
               <XCircle className="h-3 w-3 mr-1" /> Ignore
             </Button>
           </div>
@@ -123,25 +193,97 @@ function LeadCard({ lead, showContacted }: { lead: RedditLead; showContacted?: b
 
 /* ───── Main Page ───── */
 export default function LeadHunt() {
+  const navigate = useNavigate();
   const [sortBy, setSortBy] = useState<"confidence" | "date">("confidence");
   const [sources, setSources] = useState<RedditSource[]>(redditSources);
   const [addSourceOpen, setAddSourceOpen] = useState(false);
   const [newSource, setNewSource] = useState({ subreddit: "", keywords: "", frequency: "daily" as const });
 
-  const pending = useMemo(() => {
-    const items = redditLeads.filter(l => l.status === "pending");
-    return items.sort((a, b) => sortBy === "confidence" ? b.confidence_score - a.confidence_score : new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-  }, [sortBy]);
+  // Stateful reddit leads
+  const [allRedditLeads, setAllRedditLeads] = useState<RedditLead[]>(initialRedditLeads);
 
-  const contacted = redditLeads.filter(l => l.status === "contacted");
-  const converted = redditLeads.filter(l => l.status === "converted");
+  // Create Lead modal
+  const [createLeadOpen, setCreateLeadOpen] = useState(false);
+  const [selectedRedditLead, setSelectedRedditLead] = useState<RedditLead | null>(null);
+  const [formData, setFormData] = useState<CreateLeadFormData>({
+    contactName: "", email: "", phone: "", source: "", stage: "new",
+    notes: "", propertyId: "", assignedUser: "u1", estimatedValue: "0",
+  });
+
+  const pending = useMemo(() => {
+    const items = allRedditLeads.filter(l => l.status === "pending");
+    return items.sort((a, b) => sortBy === "confidence" ? b.confidence_score - a.confidence_score : new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }, [sortBy, allRedditLeads]);
+
+  const contacted = allRedditLeads.filter(l => l.status === "contacted");
+  const converted = allRedditLeads.filter(l => l.status === "converted");
 
   const stats = [
-    { label: "Total Leads Found", value: redditLeads.length, icon: Target, color: "text-primary" },
+    { label: "Total Leads Found", value: allRedditLeads.length, icon: Target, color: "text-primary" },
     { label: "Pending Review", value: pending.length, icon: Clock, color: "text-yellow-400" },
     { label: "Contacted", value: contacted.length, icon: UserCheck, color: "text-blue-400" },
     { label: "Converted", value: converted.length, icon: CheckCircle2, color: "text-emerald-400" },
   ];
+
+  function handleOpenCreateLead(lead: RedditLead) {
+    setSelectedRedditLead(lead);
+    setFormData(buildInitialForm(lead));
+    setCreateLeadOpen(true);
+  }
+
+  function handleContactLead(lead: RedditLead) {
+    setAllRedditLeads(prev => prev.map(l =>
+      l.id === lead.id ? { ...l, status: "contacted" as const, contacted_at: new Date().toISOString() } : l
+    ));
+    toast.success("Marked as contacted");
+  }
+
+  function handleIgnoreLead(lead: RedditLead) {
+    setAllRedditLeads(prev => prev.map(l =>
+      l.id === lead.id ? { ...l, status: "ignored" as const } : l
+    ));
+    toast("Lead ignored");
+  }
+
+  function handleSubmitCreateLead() {
+    if (!selectedRedditLead || !formData.contactName) return;
+
+    // Generate new lead ID
+    const newLeadId = `l-reddit-${Date.now()}`;
+
+    // Create the CRM lead (in real app this would be a DB insert)
+    const newLead: Lead = {
+      id: newLeadId,
+      title: `Reddit Lead - ${formData.contactName}`,
+      stage: formData.stage as any,
+      priority: "Medium",
+      source: formData.source,
+      estimated_value: Number(formData.estimatedValue) || 0,
+      next_follow_up: new Date(Date.now() + 86400000 * 3).toISOString().split("T")[0],
+      tags: ["Reddit", "LeadHunt"],
+      contact_id: "", // would be created/linked in real app
+      property_id: formData.propertyId || null,
+      assigned_user: formData.assignedUser,
+      created_at: new Date().toISOString(),
+    };
+
+    // Push to mock leads array (for demo purposes)
+    crmLeads.push(newLead);
+
+    // Update reddit lead status
+    setAllRedditLeads(prev => prev.map(l =>
+      l.id === selectedRedditLead.id
+        ? { ...l, status: "contacted" as const, contacted_at: new Date().toISOString() }
+        : l
+    ));
+
+    setCreateLeadOpen(false);
+    setSelectedRedditLead(null);
+    toast.success("Lead created! Added to CRM pipeline");
+
+    // Navigate to leads page (in real app would go to specific lead detail)
+    setTimeout(() => navigate(`/leads`), 500);
+  }
 
   function handleAddSource() {
     if (!newSource.subreddit) return;
@@ -159,6 +301,9 @@ export default function LeadHunt() {
     setAddSourceOpen(false);
     toast.success("Source added");
   }
+
+  const updateField = (field: keyof CreateLeadFormData, value: string) =>
+    setFormData(prev => ({ ...prev, [field]: value }));
 
   return (
     <div className="flex h-screen bg-background">
@@ -211,7 +356,15 @@ export default function LeadHunt() {
                 </Select>
               </div>
               <div className="grid gap-4 md:grid-cols-2">
-                {pending.map(l => <LeadCard key={l.id} lead={l} />)}
+                {pending.map(l => (
+                  <LeadCard
+                    key={l.id}
+                    lead={l}
+                    onCreateLead={handleOpenCreateLead}
+                    onContact={handleContactLead}
+                    onIgnore={handleIgnoreLead}
+                  />
+                ))}
               </div>
               {pending.length === 0 && (
                 <div className="text-center py-16 text-muted-foreground">
@@ -225,7 +378,16 @@ export default function LeadHunt() {
             {/* Contacted */}
             <TabsContent value="contacted">
               <div className="grid gap-4 md:grid-cols-2">
-                {contacted.map(l => <LeadCard key={l.id} lead={l} showContacted />)}
+                {contacted.map(l => (
+                  <LeadCard
+                    key={l.id}
+                    lead={l}
+                    showContacted
+                    onCreateLead={handleOpenCreateLead}
+                    onContact={handleContactLead}
+                    onIgnore={handleIgnoreLead}
+                  />
+                ))}
               </div>
             </TabsContent>
 
@@ -341,6 +503,90 @@ export default function LeadHunt() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setAddSourceOpen(false)}>Cancel</Button>
             <Button onClick={handleAddSource}>Add Source</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Lead in CRM Modal */}
+      <Dialog open={createLeadOpen} onOpenChange={setCreateLeadOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create Lead in CRM</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Contact Name</Label>
+              <Input value={formData.contactName} onChange={e => updateField("contactName", e.target.value)} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Email <span className="text-muted-foreground text-xs">(optional)</span></Label>
+                <Input type="email" placeholder="email@example.com" value={formData.email} onChange={e => updateField("email", e.target.value)} />
+              </div>
+              <div>
+                <Label>Phone <span className="text-muted-foreground text-xs">(optional)</span></Label>
+                <Input type="tel" placeholder="(555) 000-0000" value={formData.phone} onChange={e => updateField("phone", e.target.value)} />
+              </div>
+            </div>
+            <div>
+              <Label>Source</Label>
+              <Input value={formData.source} readOnly className="text-muted-foreground" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Pipeline Stage</Label>
+                <Select value={formData.stage} onValueChange={v => updateField("stage", v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {PIPELINE_STAGES.map(s => (
+                      <SelectItem key={s.id} value={s.id}>{s.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Estimated Value ($)</Label>
+                <Input type="number" value={formData.estimatedValue} onChange={e => updateField("estimatedValue", e.target.value)} />
+              </div>
+            </div>
+            <div>
+              <Label>Assigned To</Label>
+              <Select value={formData.assignedUser} onValueChange={v => updateField("assignedUser", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {users.map(u => (
+                    <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {properties.length > 0 && (
+              <div>
+                <Label>Linked Property</Label>
+                <Select value={formData.propertyId || "none"} onValueChange={v => updateField("propertyId", v === "none" ? "" : v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No property</SelectItem>
+                    {properties.map(p => (
+                      <SelectItem key={p.id} value={p.id}>{p.address}, {p.city}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <div>
+              <Label>Notes</Label>
+              <Textarea
+                rows={8}
+                value={formData.notes}
+                onChange={e => updateField("notes", e.target.value)}
+                className="text-xs font-mono"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreateLeadOpen(false)}>Cancel</Button>
+            <Button onClick={handleSubmitCreateLead}>Create Lead</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
