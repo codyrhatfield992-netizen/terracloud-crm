@@ -18,8 +18,12 @@ import StatusBadge from "@/components/StatusBadge";
 import {
   Target, TrendingUp, Clock, UserCheck, CheckCircle2,
   ChevronDown, ExternalLink, MessageSquare, XCircle, Plus,
-  Pencil, Trash2, Copy
+  Pencil, Trash2, Copy, X
 } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   redditLeads as initialRedditLeads, redditSources, redditThreads, properties, leads as crmLeads,
   PIPELINE_STAGES, users,
@@ -196,8 +200,17 @@ export default function LeadHunt() {
   const navigate = useNavigate();
   const [sortBy, setSortBy] = useState<"confidence" | "date">("confidence");
   const [sources, setSources] = useState<RedditSource[]>(redditSources);
-  const [addSourceOpen, setAddSourceOpen] = useState(false);
-  const [newSource, setNewSource] = useState({ subreddit: "", keywords: "", frequency: "daily" as const });
+
+  // Source modal state
+  const [sourceModalOpen, setSourceModalOpen] = useState(false);
+  const [editingSource, setEditingSource] = useState<RedditSource | null>(null);
+  const [sourceForm, setSourceForm] = useState({ subreddit: "", keywords: [] as string[], frequency: "daily", active: true });
+  const [keywordInput, setKeywordInput] = useState("");
+  const [sourceErrors, setSourceErrors] = useState<{ subreddit?: string; keywords?: string }>({});
+
+  // Delete confirmation
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
   // Stateful reddit leads
   const [allRedditLeads, setAllRedditLeads] = useState<RedditLead[]>(initialRedditLeads);
