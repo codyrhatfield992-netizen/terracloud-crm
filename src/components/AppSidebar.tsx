@@ -26,16 +26,16 @@ export default function AppSidebar() {
   const location = useLocation();
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-56 bg-sidebar border-r border-sidebar-border flex flex-col z-50">
+    <aside className="fixed left-0 top-0 h-screen w-56 bg-background border-r border-border flex flex-col z-50">
       {/* Logo */}
-      <div className="h-14 flex items-center px-5">
+      <div className="h-14 flex items-center px-5 border-b border-border">
         <span className="text-base font-semibold tracking-tight text-foreground">
           Terra<span className="text-primary">Cloud</span>
         </span>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 py-2 px-3 space-y-0.5 overflow-y-auto scrollbar-thin">
+      <nav className="flex-1 py-3 px-3 space-y-0.5 overflow-y-auto scrollbar-thin">
         {navItems.map((item) => {
           const isActive =
             location.pathname === item.path ||
@@ -44,12 +44,15 @@ export default function AppSidebar() {
             <NavLink
               key={item.path}
               to={item.path}
-              className={`flex items-center gap-3 px-3 py-2 rounded-md text-[13px] font-medium transition-colors ${
+              className={`flex items-center gap-3 px-3 py-2 rounded-md text-[13px] font-medium transition-colors relative ${
                 isActive
-                  ? "text-foreground bg-sidebar-accent"
-                  : "text-sidebar-foreground hover:text-foreground hover:bg-sidebar-accent/50"
+                  ? "text-primary bg-primary/5"
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent"
               }`}
             >
+              {isActive && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary rounded-r" />
+              )}
               <item.icon className="h-[18px] w-[18px] shrink-0" />
               <span>{item.label}</span>
             </NavLink>
@@ -58,15 +61,18 @@ export default function AppSidebar() {
       </nav>
 
       {/* Settings at bottom */}
-      <div className="px-3 pb-4">
+      <div className="px-3 pb-4 border-t border-border pt-3">
         <NavLink
           to="/settings"
-          className={`flex items-center gap-3 px-3 py-2 rounded-md text-[13px] font-medium transition-colors ${
+          className={`flex items-center gap-3 px-3 py-2 rounded-md text-[13px] font-medium transition-colors relative ${
             location.pathname === "/settings"
-              ? "text-foreground bg-sidebar-accent"
-              : "text-sidebar-foreground hover:text-foreground hover:bg-sidebar-accent/50"
+              ? "text-primary bg-primary/5"
+              : "text-muted-foreground hover:text-foreground hover:bg-accent"
           }`}
         >
+          {location.pathname === "/settings" && (
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary rounded-r" />
+          )}
           <Settings className="h-[18px] w-[18px] shrink-0" />
           <span>Settings</span>
         </NavLink>
