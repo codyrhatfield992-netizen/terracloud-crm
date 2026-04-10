@@ -298,21 +298,81 @@ export default function LeadHunt() {
     setTimeout(() => navigate(`/leads`), 500);
   }
 
-  function handleAddSource() {
-    if (!newSource.subreddit) return;
-    const src: RedditSource = {
-      id: `rs-${Date.now()}`,
-      subreddit: newSource.subreddit.startsWith("r/") ? newSource.subreddit : `r/${newSource.subreddit}`,
-      keywords: newSource.keywords.split(",").map(k => k.trim()).filter(Boolean),
-      scan_frequency: newSource.frequency,
-      last_scanned: new Date().toISOString(),
-      active: true,
-      created_at: new Date().toISOString(),
-    };
-    setSources(prev => [...prev, src]);
-    setNewSource({ subreddit: "", keywords: "", frequency: "daily" });
-    setAddSourceOpen(false);
-    toast.success("Source added");
+  function openSourceModal(source?: RedditSource) {
+    if (source) {
+      setEditingSource(source);
+      setSourceForm({
+        subreddit: source.subreddit.replace(/^r\//, ""),
+        keywords: [...source.keywords],
+        frequency: source.scan_frequency,
+        active: source.active,
+      });
+    } else {
+      setEditingSource(null);
+      setSourceForm({ subreddit: "", keywords: [], frequency: "daily", active: true });
+    }
+    setKeywordInput("");
+    setSourceErrors({});
+    setSourceModalOpen(true);
+  }
+
+  function addKeyword() {
+    const kw = keywordInput.trim();
+    if (!kw || sourceForm.keywords.includes(kw)) return;
+    setSourceForm(p => ({ ...p, keywords: [...p.keywords, kw] }));
+    setKeywordInput("");
+    setSourceErrors(p => ({ ...p, keywords: undefined }));
+  }
+
+  function removeKeyword(kw: string) {
+    setSourceForm(p => ({ ...p, keywords: p.keywords.filter(k => k !== kw) }));
+  }
+
+  function handleSaveSource() {
+    const errors: typeof sourceErrors = {};
+    if (!sourceForm.subreddit.trim()) errors.subreddit = "Subreddit is required";
+    if (sourceForm.keywords.length === 0) errors.keywords = "At least 1 keyword is required";
+    if (Object.keys(errors).length) { setSourceErrors(errors); return; }
+
+    const sub = sourceForm.subreddit.startsWith("r/") ? sourceForm.subreddit : `r/${sourceForm.subreddit}`;
+
+    if (editingSource) {
+      setSources(prev => prev.map(s => s.id === editingSource.id ? {
+        ...s,
+        subreddit: sub,
+        keywords: sourceForm.keywords,
+        scan_frequency: sourceForm.frequency as any,
+        active: sourceForm.active,
+      } : s));
+      toast.success("Source updated");
+    } else {
+      const src: RedditSource = {
+        id: `rs-${Date.now()}`,
+        subreddit: sub,
+        keywords: sourceForm.keywords,
+        scan_frequency: sourceForm.frequency as any,
+        last_scanned: new Date().toISOString(),
+        active: sourceForm.active,
+        created_at: new Date().toISOString(),
+      };
+      setSources(prev => [...prev, src]);
+      toast.success("Source added");
+    }
+    setSourceModalOpen(false);
+  }
+
+  function confirmDeleteSource(id: string) {
+    setDeleteTargetId(id);
+    setDeleteConfirmOpen(true);
+  }
+
+  function executeDeleteSource() {
+    if (deleteTargetId) {
+      setSources(prev => prev.filter(s => s.id !== deleteTargetId));
+      toast("Source deleted");
+    }
+    setDeleteConfirmOpen(false);
+    setDeleteTargetId(null);
   }
 
   const updateField = (field: keyof CreateLeadFormData, value: string) =>
