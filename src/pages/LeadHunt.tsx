@@ -524,7 +524,7 @@ export default function LeadHunt() {
                         </TableCell>
                         <TableCell>{sentimentBadge(t.sentiment)}</TableCell>
                         <TableCell>
-                          {t.processed ? <CheckCircle2 className="h-4 w-4 text-emerald-400" /> : <Clock className="h-4 w-4 text-muted-foreground" />}
+                          {t.processed ? <CheckCircle2 className="h-4 w-4 text-success" /> : <Clock className="h-4 w-4 text-muted-foreground" />}
                         </TableCell>
                         <TableCell>
                           <a href={t.url} target="_blank" rel="noreferrer">
