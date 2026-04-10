@@ -32,9 +32,9 @@ import { toast } from "sonner";
 
 function confidenceBadge(score: number) {
   const pct = Math.round(score * 100);
-  if (score >= 0.8) return <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">{pct}%</Badge>;
-  if (score >= 0.6) return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">{pct}%</Badge>;
-  return <Badge variant="secondary">{pct}%</Badge>;
+  if (score >= 0.8) return <Badge className="bg-secondary text-foreground border border-border gap-1"><span className="h-1.5 w-1.5 rounded-full bg-success" />{pct}%</Badge>;
+  if (score >= 0.6) return <Badge className="bg-secondary text-foreground border border-border gap-1"><span className="h-1.5 w-1.5 rounded-full bg-warning" />{pct}%</Badge>;
+  return <Badge className="bg-secondary text-muted-foreground border border-border gap-1"><span className="h-1.5 w-1.5 rounded-full bg-muted-foreground" />{pct}%</Badge>;
 }
 
 function sentimentBadge(s: string) {

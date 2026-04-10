@@ -11,9 +11,9 @@ const ENTITY_TYPES = ["lead", "contact", "property"] as const;
 
 function getFileIcon(type: DocFile["type"]) {
   switch (type) {
-    case "PDF": case "Contract": return <FileText className="h-8 w-8 text-red-400" />;
-    case "Image": return <FileImage className="h-8 w-8 text-blue-400" />;
-    case "Spreadsheet": return <FileSpreadsheet className="h-8 w-8 text-green-400" />;
+    case "PDF": case "Contract": return <FileText className="h-8 w-8 text-muted-foreground" />;
+    case "Image": return <FileImage className="h-8 w-8 text-muted-foreground" />;
+    case "Spreadsheet": return <FileSpreadsheet className="h-8 w-8 text-muted-foreground" />;
     default: return <File className="h-8 w-8 text-muted-foreground" />;
   }
 }
