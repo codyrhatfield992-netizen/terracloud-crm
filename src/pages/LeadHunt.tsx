@@ -16,7 +16,7 @@ import StatusBadge from "@/components/StatusBadge";
 import {
   Target, TrendingUp, Clock, UserCheck, CheckCircle2,
   ChevronDown, ExternalLink, MessageSquare, XCircle, Plus,
-  Pencil, Trash2, Eye
+  } from "lucide-react";
 } from "lucide-react";
 import {
   redditLeads, redditSources, redditThreads, properties,

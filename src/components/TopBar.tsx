@@ -12,6 +12,7 @@ const breadcrumbMap: Record<string, string> = {
   "/meetings": "Meetings",
   "/documents": "Documents",
   "/settings": "Settings",
+  "/lead-hunt": "LeadHunt",
 };
 
 interface SearchResult {
