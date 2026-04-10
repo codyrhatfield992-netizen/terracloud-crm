@@ -14,6 +14,219 @@ export type Database = {
   }
   public: {
     Tables: {
+      activities: {
+        Row: {
+          created_at: string
+          description: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      contacts: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string
+          source: string
+          tags: string[]
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string
+          id?: string
+          name: string
+          phone?: string
+          source?: string
+          tags?: string[]
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+          source?: string
+          tags?: string[]
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      documents: {
+        Row: {
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          file_type: string
+          id: string
+          name: string
+          size: number
+          updated_at: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          file_type?: string
+          id?: string
+          name: string
+          size?: number
+          updated_at?: string
+          url?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          file_type?: string
+          id?: string
+          name?: string
+          size?: number
+          updated_at?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      leads: {
+        Row: {
+          contact_id: string | null
+          created_at: string
+          estimated_value: number
+          id: string
+          next_follow_up: string | null
+          priority: string
+          property_id: string | null
+          source: string
+          stage: string
+          tags: string[]
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contact_id?: string | null
+          created_at?: string
+          estimated_value?: number
+          id?: string
+          next_follow_up?: string | null
+          priority?: string
+          property_id?: string | null
+          source?: string
+          stage?: string
+          tags?: string[]
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contact_id?: string | null
+          created_at?: string
+          estimated_value?: number
+          id?: string
+          next_follow_up?: string | null
+          priority?: string
+          property_id?: string | null
+          source?: string
+          stage?: string
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meetings: {
+        Row: {
+          attendees: string[]
+          created_at: string
+          date: string
+          duration: string
+          id: string
+          location: string
+          notes: string
+          time: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attendees?: string[]
+          created_at?: string
+          date?: string
+          duration?: string
+          id?: string
+          location?: string
+          notes?: string
+          time?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attendees?: string[]
+          created_at?: string
+          date?: string
+          duration?: string
+          id?: string
+          location?: string
+          notes?: string
+          time?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -36,6 +249,111 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      properties: {
+        Row: {
+          address: string
+          arv: number
+          asking_price: number
+          baths: number
+          beds: number
+          city: string
+          created_at: string
+          id: string
+          image_url: string
+          notes: string
+          offer_price: number
+          property_type: string
+          sqft: number
+          state: string
+          status: string
+          updated_at: string
+          user_id: string
+          zip: string
+        }
+        Insert: {
+          address: string
+          arv?: number
+          asking_price?: number
+          baths?: number
+          beds?: number
+          city?: string
+          created_at?: string
+          id?: string
+          image_url?: string
+          notes?: string
+          offer_price?: number
+          property_type?: string
+          sqft?: number
+          state?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          zip?: string
+        }
+        Update: {
+          address?: string
+          arv?: number
+          asking_price?: number
+          baths?: number
+          beds?: number
+          city?: string
+          created_at?: string
+          id?: string
+          image_url?: string
+          notes?: string
+          offer_price?: number
+          property_type?: string
+          sqft?: number
+          state?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          zip?: string
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          completed: boolean
+          created_at: string
+          description: string
+          due_date: string | null
+          id: string
+          priority: string
+          related_entity_id: string | null
+          related_entity_type: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          description?: string
+          due_date?: string | null
+          id?: string
+          priority?: string
+          related_entity_id?: string | null
+          related_entity_type?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          description?: string
+          due_date?: string | null
+          id?: string
+          priority?: string
+          related_entity_id?: string | null
+          related_entity_type?: string
+          title?: string
           updated_at?: string
           user_id?: string
         }
