@@ -232,10 +232,10 @@ export default function LeadHunt() {
   const converted = allRedditLeads.filter(l => l.status === "converted");
 
   const stats = [
-    { label: "Total Leads Found", value: allRedditLeads.length, icon: Target, color: "text-primary" },
-    { label: "Pending Review", value: pending.length, icon: Clock, color: "text-yellow-400" },
-    { label: "Contacted", value: contacted.length, icon: UserCheck, color: "text-blue-400" },
-    { label: "Converted", value: converted.length, icon: CheckCircle2, color: "text-emerald-400" },
+    { label: "Total Leads Found", value: allRedditLeads.length, icon: Target },
+    { label: "Pending Review", value: pending.length, icon: Clock },
+    { label: "Contacted", value: contacted.length, icon: UserCheck },
+    { label: "Converted", value: converted.length, icon: CheckCircle2 },
   ];
 
   function handleOpenCreateLead(lead: RedditLead) {
