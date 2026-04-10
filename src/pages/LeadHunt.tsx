@@ -464,10 +464,9 @@ export default function LeadHunt() {
               </div>
             </TabsContent>
 
-            {/* Sources */}
             <TabsContent value="sources" className="space-y-4">
               <div className="flex justify-end">
-                <Button size="sm" onClick={() => setAddSourceOpen(true)}><Plus className="h-3 w-3 mr-1" /> Add Source</Button>
+                <Button size="sm" onClick={() => openSourceModal()}><Plus className="h-3 w-3 mr-1" /> Add Source</Button>
               </div>
               <Card>
                 <Table>
@@ -500,8 +499,8 @@ export default function LeadHunt() {
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-1">
-                            <Button size="icon" variant="ghost" className="h-7 w-7"><Pencil className="h-3 w-3" /></Button>
-                            <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => { setSources(prev => prev.filter(x => x.id !== s.id)); toast("Source deleted"); }}><Trash2 className="h-3 w-3" /></Button>
+                            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openSourceModal(s)}><Pencil className="h-3 w-3" /></Button>
+                            <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => confirmDeleteSource(s.id)}><Trash2 className="h-3 w-3" /></Button>
                           </div>
                         </TableCell>
                       </TableRow>
