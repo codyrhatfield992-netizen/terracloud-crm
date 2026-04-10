@@ -1,2 +1,2 @@
-// Supabase client placeholder - will be configured when Lovable Cloud is enabled
-export const supabase = null;
+// Re-export from the auto-generated integration
+export { supabase } from "@/integrations/supabase/client";

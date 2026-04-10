@@ -1,7 +1,8 @@
 import { Search, Plus, ChevronDown, Bell, LogOut, Settings, User } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { leads, contacts, properties } from "@/data/mockData";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 const breadcrumbMap: Record<string, string> = {
@@ -32,8 +33,14 @@ export default function TopBar() {
   const location = useLocation();
   const newMenuRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const { user, signOut } = useAuth();
 
   const breadcrumb = breadcrumbMap[location.pathname] || location.pathname.split("/").filter(Boolean).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(" / ");
+
+  const userEmail = user?.email ?? "";
+  const userInitials = user?.user_metadata?.full_name
+    ? user.user_metadata.full_name.split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 2)
+    : userEmail.slice(0, 2).toUpperCase();
 
   const searchResults: SearchResult[] = search.length >= 2
     ? [
@@ -59,18 +66,22 @@ export default function TopBar() {
     setSearchFocused(false);
   };
 
-  const handleSignOut = () => {
-    // In production: await supabase.auth.signOut()
+  const handleSignOut = async () => {
+    await signOut();
     toast.success("Signed out successfully");
     setShowUserMenu(false);
-    navigate("/");
+    navigate("/login");
   };
 
   return (
     <header className="h-14 border-b border-border bg-background/50 backdrop-blur-sm flex items-center px-6 shrink-0">
-      {/* Left: Breadcrumb */}
-      <div className="flex-1 min-w-0">
-        <h2 className="text-sm font-medium text-muted-foreground">{breadcrumb}</h2>
+      {/* Left: Logo + Breadcrumb */}
+      <div className="flex-1 min-w-0 flex items-center gap-4">
+        <Link to="/" className="text-sm font-semibold text-foreground hover:text-primary transition-colors shrink-0">
+          Terra<span className="text-primary">Cloud</span>
+        </Link>
+        <span className="text-border">/</span>
+        <h2 className="text-sm font-medium text-muted-foreground truncate">{breadcrumb}</h2>
       </div>
 
       {/* Center: Search */}
@@ -84,16 +95,11 @@ export default function TopBar() {
             onChange={(e) => setSearch(e.target.value)}
             onFocus={() => setSearchFocused(true)}
             onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
-            className="w-full h-8 pl-9 pr-4 rounded-md bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
+            className="w-full h-8 pl-9 pr-4 rounded-md bg-card border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
           />
-          {!searchFocused && !search && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:flex items-center">
-              <kbd className="px-1.5 py-0.5 text-[10px] text-muted-foreground bg-background border border-border rounded font-mono">/</kbd>
-            </div>
-          )}
 
           {searchFocused && searchResults.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-2xl overflow-hidden z-50">
+            <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-md shadow-2xl overflow-hidden z-50">
               {searchResults.map((result) => (
                 <button
                   key={`${result.type}-${result.id}`}
@@ -110,7 +116,7 @@ export default function TopBar() {
             </div>
           )}
           {searchFocused && search.length >= 2 && searchResults.length === 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-2xl overflow-hidden z-50 p-4">
+            <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-md shadow-2xl overflow-hidden z-50 p-4">
               <p className="text-sm text-muted-foreground text-center">No results found</p>
             </div>
           )}
@@ -121,7 +127,6 @@ export default function TopBar() {
       <div className="flex-1 flex items-center justify-end gap-1.5">
         <button className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-accent transition-colors text-muted-foreground hover:text-foreground relative">
           <Bell className="h-4 w-4" />
-          <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-primary" />
         </button>
 
         {/* New Item Dropdown */}
@@ -134,7 +139,7 @@ export default function TopBar() {
             <span className="hidden sm:inline text-[13px]">New</span>
           </button>
           {showNewMenu && (
-            <div className="absolute right-0 top-full mt-1.5 w-44 bg-popover border border-border rounded-md shadow-2xl overflow-hidden z-50 py-1">
+            <div className="absolute right-0 top-full mt-1.5 w-44 bg-card border border-border rounded-md shadow-2xl overflow-hidden z-50 py-1">
               {[
                 { label: "New Lead", path: "/leads" },
                 { label: "New Contact", path: "/contacts" },
@@ -157,20 +162,18 @@ export default function TopBar() {
         <div className="relative" ref={userMenuRef}>
           <button
             onClick={() => setShowUserMenu(!showUserMenu)}
-            className="h-8 w-8 rounded-full bg-secondary border border-border flex items-center justify-center text-xs font-medium text-muted-foreground hover:text-foreground hover:border-muted-foreground/30 transition-colors ml-1"
+            className="h-8 w-8 rounded-lg bg-card border border-border flex items-center justify-center text-xs font-medium text-muted-foreground hover:text-foreground hover:border-muted-foreground/30 transition-colors ml-1"
+            title={userEmail}
           >
-            AR
+            {userInitials}
           </button>
           {showUserMenu && (
-            <div className="absolute right-0 top-full mt-1.5 w-52 bg-popover border border-border rounded-md shadow-2xl overflow-hidden z-50">
+            <div className="absolute right-0 top-full mt-1.5 w-52 bg-card border border-border rounded-md shadow-2xl overflow-hidden z-50">
               <div className="px-3 py-3 border-b border-border">
-                <p className="text-sm font-medium text-foreground">Alex Rivera</p>
-                <p className="text-xs text-muted-foreground">alex@terracloud.io</p>
+                <p className="text-sm font-medium text-foreground">{user?.user_metadata?.full_name || "User"}</p>
+                <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
               </div>
               <div className="py-1">
-                <button onClick={() => { navigate("/settings"); setShowUserMenu(false); }} className="w-full text-left px-3 py-2 text-[13px] text-foreground hover:bg-accent transition-colors flex items-center gap-2">
-                  <User className="h-4 w-4 text-muted-foreground" /> Profile
-                </button>
                 <button onClick={() => { navigate("/settings"); setShowUserMenu(false); }} className="w-full text-left px-3 py-2 text-[13px] text-foreground hover:bg-accent transition-colors flex items-center gap-2">
                   <Settings className="h-4 w-4 text-muted-foreground" /> Settings
                 </button>
