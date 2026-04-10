@@ -386,3 +386,80 @@ export function timeAgo(timestamp: string): string {
   if (diffDays < 7) return `${diffDays}d ago`;
   return then.toLocaleDateString();
 }
+
+/* ─── Reddit Lead Generation ─── */
+
+export interface RedditSource {
+  id: string;
+  subreddit: string;
+  keywords: string[];
+  scan_frequency: "hourly" | "daily" | "weekly";
+  last_scanned: string;
+  active: boolean;
+  created_at: string;
+}
+
+export interface RedditThread {
+  id: string;
+  source_id: string;
+  subreddit: string;
+  reddit_id: string;
+  title: string;
+  body: string;
+  author: string;
+  url: string;
+  matched_keywords: string[];
+  sentiment: "positive" | "neutral" | "negative";
+  processed: boolean;
+  created_at: string;
+}
+
+export interface RedditLead {
+  id: string;
+  thread_id: string;
+  status: "pending" | "contacted" | "converted" | "ignored";
+  confidence_score: number;
+  ai_summary: string;
+  outreach_message: string;
+  matched_property_id: string | null;
+  contacted_at: string | null;
+  created_at: string;
+}
+
+export const redditSources: RedditSource[] = [
+  { id: "rs-1", subreddit: "r/realestate", keywords: ["buying first home", "investment property", "house hunting"], scan_frequency: "hourly", last_scanned: "2025-06-08T14:00:00", active: true, created_at: "2025-05-01T10:00:00" },
+  { id: "rs-2", subreddit: "r/RealEstateInvesting", keywords: ["fix and flip", "rental property", "cash flow"], scan_frequency: "daily", last_scanned: "2025-06-08T08:00:00", active: true, created_at: "2025-05-05T10:00:00" },
+  { id: "rs-3", subreddit: "r/FirstTimeHomeBuyer", keywords: ["FHA loan", "down payment", "closing costs"], scan_frequency: "daily", last_scanned: "2025-06-07T12:00:00", active: true, created_at: "2025-05-10T10:00:00" },
+  { id: "rs-4", subreddit: "r/homeowners", keywords: ["sell my house", "listing agent", "home value"], scan_frequency: "weekly", last_scanned: "2025-06-05T10:00:00", active: false, created_at: "2025-05-15T10:00:00" },
+  { id: "rs-5", subreddit: "r/personalfinance", keywords: ["mortgage", "real estate investment", "property tax"], scan_frequency: "daily", last_scanned: "2025-06-08T06:00:00", active: true, created_at: "2025-05-20T10:00:00" },
+];
+
+export const redditThreads: RedditThread[] = [
+  { id: "rt-1", source_id: "rs-1", subreddit: "r/realestate", reddit_id: "abc123", title: "Looking to buy my first investment property in Austin area", body: "I've been saving for a while and want to get into real estate investing. Looking at properties in the Austin metro area, specifically interested in single family homes under 300k that could be good rentals...", author: "u/investorNewbie22", url: "https://reddit.com/r/realestate/abc123", matched_keywords: ["investment property", "buying first home"], sentiment: "positive", processed: true, created_at: "2025-06-08T13:00:00" },
+  { id: "rt-2", source_id: "rs-2", subreddit: "r/RealEstateInvesting", reddit_id: "def456", title: "Best markets for fix and flip in 2025?", body: "Looking for advice on the best markets for fix and flip right now. I have about 150k in capital and am willing to relocate. Anyone having success in smaller markets?", author: "u/flipperDan", url: "https://reddit.com/r/RealEstateInvesting/def456", matched_keywords: ["fix and flip"], sentiment: "positive", processed: true, created_at: "2025-06-08T11:00:00" },
+  { id: "rt-3", source_id: "rs-3", subreddit: "r/FirstTimeHomeBuyer", reddit_id: "ghi789", title: "FHA loan with 3.5% down - is it worth it?", body: "My wife and I are first time buyers looking at homes in the 250-350k range. We qualify for FHA with 3.5% down but unsure if we should wait and save more...", author: "u/newHomeBuyer99", url: "https://reddit.com/r/FirstTimeHomeBuyer/ghi789", matched_keywords: ["FHA loan", "down payment"], sentiment: "neutral", processed: true, created_at: "2025-06-08T09:30:00" },
+  { id: "rt-4", source_id: "rs-1", subreddit: "r/realestate", reddit_id: "jkl012", title: "Relocating to Denver - need agent recommendations", body: "Moving from California to Denver for work. Need help finding a good neighborhood and a reliable agent who knows the market well...", author: "u/denverBound2025", url: "https://reddit.com/r/realestate/jkl012", matched_keywords: ["house hunting"], sentiment: "positive", processed: true, created_at: "2025-06-07T16:00:00" },
+  { id: "rt-5", source_id: "rs-2", subreddit: "r/RealEstateInvesting", reddit_id: "mno345", title: "Cash flow analysis on a 4-plex", body: "Found a 4-plex listed at 420k with current rents of $4200/mo total. Running the numbers but would love input from experienced investors...", author: "u/multiFamily_Mike", url: "https://reddit.com/r/RealEstateInvesting/mno345", matched_keywords: ["rental property", "cash flow"], sentiment: "positive", processed: true, created_at: "2025-06-07T14:00:00" },
+  { id: "rt-6", source_id: "rs-5", subreddit: "r/personalfinance", reddit_id: "pqr678", title: "Should I pay off mortgage early or invest?", body: "Have a 3.5% mortgage rate with 25 years left. Got a bonus and wondering if I should throw it at the mortgage or invest in another property...", author: "u/financeFocus101", url: "https://reddit.com/r/personalfinance/pqr678", matched_keywords: ["mortgage", "real estate investment"], sentiment: "neutral", processed: true, created_at: "2025-06-07T10:00:00" },
+  { id: "rt-7", source_id: "rs-4", subreddit: "r/homeowners", reddit_id: "stu901", title: "Thinking of selling - how do I find my home's value?", body: "We've lived here 8 years and are considering selling. The neighborhood has changed a lot. How do I get an accurate home valuation?", author: "u/sellerSam", url: "https://reddit.com/r/homeowners/stu901", matched_keywords: ["sell my house", "home value"], sentiment: "neutral", processed: true, created_at: "2025-06-06T12:00:00" },
+  { id: "rt-8", source_id: "rs-1", subreddit: "r/realestate", reddit_id: "vwx234", title: "Is now a good time to buy in Phoenix?", body: "Prices seem to be cooling off slightly in Phoenix. Is this a good entry point or should I wait longer?", author: "u/azBuyer", url: "https://reddit.com/r/realestate/vwx234", matched_keywords: ["house hunting", "buying first home"], sentiment: "neutral", processed: false, created_at: "2025-06-08T15:00:00" },
+  { id: "rt-9", source_id: "rs-3", subreddit: "r/FirstTimeHomeBuyer", reddit_id: "yza567", title: "Closing costs way higher than expected", body: "Just got our closing disclosure and the costs are $12k more than the initial estimate. Is this normal? Feeling frustrated...", author: "u/closingShock", url: "https://reddit.com/r/FirstTimeHomeBuyer/yza567", matched_keywords: ["closing costs"], sentiment: "negative", processed: true, created_at: "2025-06-06T08:00:00" },
+  { id: "rt-10", source_id: "rs-2", subreddit: "r/RealEstateInvesting", reddit_id: "bcd890", title: "BRRRR method success story - bought for 120k, now worth 280k", body: "Just wanted to share my BRRRR success. Bought a distressed SFH for 120k, put 45k into rehab, appraised at 280k, refinanced and pulled all my capital out...", author: "u/brrrrKing", url: "https://reddit.com/r/RealEstateInvesting/bcd890", matched_keywords: ["fix and flip", "rental property"], sentiment: "positive", processed: true, created_at: "2025-06-05T18:00:00" },
+  { id: "rt-11", source_id: "rs-5", subreddit: "r/personalfinance", reddit_id: "efg123", title: "Property tax assessment too high - how to appeal?", body: "My property tax went up 30% this year. The assessment seems way too high compared to recent sales in my area...", author: "u/taxFighter", url: "https://reddit.com/r/personalfinance/efg123", matched_keywords: ["property tax"], sentiment: "negative", processed: false, created_at: "2025-06-08T07:00:00" },
+  { id: "rt-12", source_id: "rs-1", subreddit: "r/realestate", reddit_id: "hij456", title: "Need help understanding contingencies", body: "Making an offer on a house and confused about inspection vs appraisal contingency. Can someone explain the risks of waiving?", author: "u/offerTime", url: "https://reddit.com/r/realestate/hij456", matched_keywords: ["house hunting"], sentiment: "neutral", processed: true, created_at: "2025-06-04T20:00:00" },
+];
+
+export const redditLeads: RedditLead[] = [
+  { id: "rl-1", thread_id: "rt-1", status: "pending", confidence_score: 0.92, ai_summary: "Active buyer with capital ready, looking for investment properties in Austin metro under 300k. High intent signals - mentions savings and specific market.", outreach_message: "Hi! I noticed you're looking at investment properties in Austin. We have several single family homes under 300k that would make excellent rentals. Would you like to see some options?", matched_property_id: "prop-1", contacted_at: null, created_at: "2025-06-08T13:05:00" },
+  { id: "rl-2", thread_id: "rt-2", status: "pending", confidence_score: 0.85, ai_summary: "Experienced flipper with 150k capital looking for new markets. Ready to relocate - very high intent buyer.", outreach_message: "Hey! We specialize in fix-and-flip opportunities and have several properties that could yield great returns. I'd love to share some analysis with you.", matched_property_id: "prop-3", contacted_at: null, created_at: "2025-06-08T11:05:00" },
+  { id: "rl-3", thread_id: "rt-3", status: "pending", confidence_score: 0.78, ai_summary: "First-time buyer couple, pre-qualified for FHA. Budget 250-350k. Could benefit from guidance on the buying process.", outreach_message: "Hi there! Congrats on taking the first step toward homeownership. FHA loans are a great option - we have homes in your price range and can connect you with an FHA-experienced lender.", matched_property_id: null, contacted_at: null, created_at: "2025-06-08T09:35:00" },
+  { id: "rl-4", thread_id: "rt-4", status: "contacted", confidence_score: 0.88, ai_summary: "Relocating professional from CA to Denver. Urgently needs an agent and housing. High conversion potential.", outreach_message: "Welcome to Denver! I'd love to help you find the perfect neighborhood. Let me send you a market overview and some listings that match what you're looking for.", matched_property_id: "prop-2", contacted_at: "2025-06-07T17:00:00", created_at: "2025-06-07T16:05:00" },
+  { id: "rl-5", thread_id: "rt-5", status: "contacted", confidence_score: 0.91, ai_summary: "Serious multi-family investor analyzing a 4-plex deal. Engaged with numbers, likely has capital ready.", outreach_message: "Great find on the 4-plex! I run cash flow analysis on multi-family properties regularly and would love to share some insights and comparable deals.", matched_property_id: null, contacted_at: "2025-06-07T15:00:00", created_at: "2025-06-07T14:05:00" },
+  { id: "rl-6", thread_id: "rt-7", status: "pending", confidence_score: 0.72, ai_summary: "Potential seller looking for home valuation. Could become a listing lead. 8 years of ownership suggests equity.", outreach_message: "I'd be happy to provide a complimentary market analysis of your home! We use recent comparable sales to give accurate valuations.", matched_property_id: null, contacted_at: null, created_at: "2025-06-06T12:05:00" },
+  { id: "rl-7", thread_id: "rt-6", status: "pending", confidence_score: 0.65, ai_summary: "Homeowner considering additional property investment. Has existing mortgage at good rate. Potential investor lead.", outreach_message: "Great question about mortgage vs investing! If you're considering real estate investment, I can share some properties that could generate strong returns.", matched_property_id: null, contacted_at: null, created_at: "2025-06-07T10:05:00" },
+  { id: "rl-8", thread_id: "rt-10", status: "contacted", confidence_score: 0.94, ai_summary: "Proven BRRRR investor with track record. Has capital and experience. Premium lead for off-market deals.", outreach_message: "Impressive BRRRR results! We have off-market distressed properties that could be perfect for your next project. Interested in seeing the pipeline?", matched_property_id: "prop-5", contacted_at: "2025-06-06T10:00:00", created_at: "2025-06-05T18:05:00" },
+  { id: "rl-9", thread_id: "rt-9", status: "ignored", confidence_score: 0.45, ai_summary: "Frustrated buyer in closing process. Already has an agent. Low conversion potential but could be a future referral.", outreach_message: "", matched_property_id: null, contacted_at: null, created_at: "2025-06-06T08:05:00" },
+  { id: "rl-10", thread_id: "rt-8", status: "pending", confidence_score: 0.82, ai_summary: "Interested buyer monitoring Phoenix market. Timing-sensitive - looking for entry point signal. Good prospect.", outreach_message: "Great timing! Phoenix is showing signs of stabilization. I can share a market analysis and some properties that represent strong value right now.", matched_property_id: "prop-4", contacted_at: null, created_at: "2025-06-08T15:05:00" },
+  { id: "rl-11", thread_id: "rt-12", status: "pending", confidence_score: 0.55, ai_summary: "Buyer making offers but confused about process. May already have representation. Moderate interest.", outreach_message: "Understanding contingencies is key to a successful offer. I'd be happy to walk you through the pros and cons of each option.", matched_property_id: null, contacted_at: null, created_at: "2025-06-04T20:05:00" },
+  { id: "rl-12", thread_id: "rt-4", status: "converted", confidence_score: 0.88, ai_summary: "Previously contacted Denver relocator - has been converted to a CRM lead and actively working with the team.", outreach_message: "", matched_property_id: "prop-2", contacted_at: "2025-06-07T17:00:00", created_at: "2025-06-07T16:05:00" },
+];
