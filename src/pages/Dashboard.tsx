@@ -22,7 +22,41 @@ const pipelineData = PIPELINE_STAGES.filter(s => s.id !== "dead").map(stage => (
 const activeLeads = leads.filter(l => !["closed", "dead"].includes(l.stage));
 const closedThisMonth = leads.filter(l => l.stage === "closed");
 const pipelineValue = activeLeads.reduce((s, l) => s + l.estimated_value, 0);
-const avgDaysToClose = 32; // Simulated metric
+const avgDaysToClose = 32;
+
+// ── LeadHunt metrics ──
+const totalRedditLeads = redditLeads.length;
+const pendingReddit = redditLeads.filter(l => l.status === "pending").length;
+const contactedReddit = redditLeads.filter(l => l.status === "contacted").length;
+const convertedReddit = redditLeads.filter(l => l.status === "converted").length;
+const conversionRate = totalRedditLeads > 0 ? Math.round((convertedReddit / totalRedditLeads) * 100) : 0;
+
+// Leads found per day (last 7 days simulated)
+const leadHuntDays = [
+  { day: "Mon", leads: 3 },
+  { day: "Tue", leads: 5 },
+  { day: "Wed", leads: 2 },
+  { day: "Thu", leads: 4 },
+  { day: "Fri", leads: 6 },
+  { day: "Sat", leads: 1 },
+  { day: "Sun", leads: 3 },
+];
+
+// Top subreddit
+const subredditCounts: Record<string, number> = {};
+redditLeads.forEach(rl => {
+  const thread = redditThreads.find(t => t.id === rl.thread_id);
+  if (thread) subredditCounts[thread.subreddit] = (subredditCounts[thread.subreddit] || 0) + 1;
+});
+const topSubreddit = Object.entries(subredditCounts).sort((a, b) => b[1] - a[1])[0];
+
+// Best keyword
+const keywordCounts: Record<string, number> = {};
+redditLeads.forEach(rl => {
+  const thread = redditThreads.find(t => t.id === rl.thread_id);
+  thread?.matched_keywords.forEach(k => { keywordCounts[k] = (keywordCounts[k] || 0) + 1; });
+});
+const bestKeyword = Object.entries(keywordCounts).sort((a, b) => b[1] - a[1])[0];
 
 const metrics = [
   { label: "Active Leads", value: String(activeLeads.length), sub: "in pipeline", icon: Users, href: "/leads" },
