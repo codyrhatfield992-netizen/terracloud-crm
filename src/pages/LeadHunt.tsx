@@ -649,7 +649,6 @@ export default function LeadHunt() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      </Dialog>
 
       {/* Create Lead in CRM Modal */}
       <Dialog open={createLeadOpen} onOpenChange={setCreateLeadOpen}>
