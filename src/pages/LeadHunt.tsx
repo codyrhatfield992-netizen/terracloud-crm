@@ -164,16 +164,16 @@ export default function LeadHunt() {
     <div className="flex h-screen bg-background">
       <AppSidebar />
       <div className="flex-1 ml-60">
-        <TopBar>
+        <TopBar />
+
+        <main className="p-6 space-y-6 overflow-y-auto" style={{ height: "calc(100vh - 56px)" }}>
+          {/* Page Header */}
           <div>
             <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
               <Target className="h-5 w-5 text-primary" /> LeadHunt
             </h1>
             <p className="text-xs text-muted-foreground">Automatically find qualified leads from Reddit discussions</p>
           </div>
-        </TopBar>
-
-        <main className="p-6 space-y-6 overflow-y-auto" style={{ height: "calc(100vh - 56px)" }}>
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {stats.map(s => (
