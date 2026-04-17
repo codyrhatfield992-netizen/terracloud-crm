@@ -4,27 +4,34 @@ import AppLayout from "@/components/AppLayout";
 import StatusBadge, { priorityVariant } from "@/components/StatusBadge";
 import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, type DbTask } from "@/hooks/useTasks";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
-
-const TODAY = new Date().toISOString().split("T")[0];
+import { PRIORITIES, formatDate, getPriorityLabel, isOverdue, isDueToday, normalizePriority } from "@/lib/constants";
 
 function dueBadgeClass(date: string | null) {
   if (!date) return "text-muted-foreground";
-  if (date < TODAY) return "bg-destructive/15 text-destructive";
-  if (date === TODAY) return "bg-warning/15 text-warning";
+  if (isOverdue(date)) return "bg-destructive/15 text-destructive";
+  if (isDueToday(date)) return "bg-warning/15 text-warning";
   return "text-muted-foreground";
 }
 
-function NewTaskModal({ open, onClose, onSubmit }: { open: boolean; onClose: () => void; onSubmit: (t: Partial<DbTask>) => void }) {
-  const [form, setForm] = useState({ title: "", description: "", due_date: "", priority: "Medium" });
+function NewTaskModal({
+  open, onClose, onSubmit, submitting,
+}: { open: boolean; onClose: () => void; onSubmit: (t: Partial<DbTask>) => void; submitting: boolean }) {
+  const [form, setForm] = useState({ title: "", description: "", due_date: "", priority: "medium" });
   const [errors, setErrors] = useState<Record<string, boolean>>({});
   if (!open) return null;
 
   const handleSubmit = () => {
     if (!form.title.trim()) { setErrors({ title: true }); return; }
-    onSubmit({ title: form.title.trim(), description: form.description, due_date: form.due_date || null, priority: form.priority, completed: false });
+    onSubmit({
+      title: form.title.trim(),
+      description: form.description,
+      due_date: form.due_date || null,
+      priority: form.priority,
+      completed: false,
+    });
+    setForm({ title: "", description: "", due_date: "", priority: "medium" });
+    setErrors({});
     onClose();
-    setForm({ title: "", description: "", due_date: "", priority: "Medium" });
   };
 
   return (
@@ -38,33 +45,37 @@ function NewTaskModal({ open, onClose, onSubmit }: { open: boolean; onClose: () 
         <div className="p-6 space-y-4">
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1">Title *</label>
-            <input value={form.title} onChange={e => { setForm(f => ({ ...f, title: e.target.value })); setErrors({}); }}
-              placeholder="Task title" className={`w-full h-9 px-3 rounded-md bg-secondary border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary ${errors.title ? "border-destructive" : "border-border"}`} />
+            <input value={form.title} onChange={(e) => { setForm((f) => ({ ...f, title: e.target.value })); if (errors.title) setErrors({}); }}
+              placeholder="Task title" autoFocus
+              className={`w-full h-9 px-3 rounded-md bg-secondary border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary ${errors.title ? "border-destructive" : "border-border"}`} />
             {errors.title && <p className="text-xs text-destructive mt-1">Required</p>}
           </div>
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1">Description</label>
-            <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+            <textarea value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
               placeholder="Task details..." className="w-full px-3 py-2 rounded-md bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary h-20 resize-none" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1">Due Date</label>
-              <input type="date" value={form.due_date} onChange={e => setForm(f => ({ ...f, due_date: e.target.value }))}
+              <input type="date" value={form.due_date} onChange={(e) => setForm((f) => ({ ...f, due_date: e.target.value }))}
                 className="w-full h-9 px-3 rounded-md bg-secondary border border-border text-sm text-foreground focus:outline-none focus:border-primary [color-scheme:dark]" />
             </div>
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1">Priority</label>
-              <select value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value }))}
+              <select value={form.priority} onChange={(e) => setForm((f) => ({ ...f, priority: e.target.value }))}
                 className="w-full h-9 px-3 rounded-md bg-secondary border border-border text-sm text-foreground focus:outline-none focus:border-primary">
-                <option>Low</option><option>Medium</option><option>High</option>
+                {PRIORITIES.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
               </select>
             </div>
           </div>
         </div>
         <div className="flex items-center justify-end gap-3 p-6 border-t border-border">
           <button onClick={onClose} className="h-9 px-4 rounded-md text-sm text-muted-foreground hover:text-foreground">Cancel</button>
-          <button onClick={handleSubmit} className="h-9 px-5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90">Create Task</button>
+          <button onClick={handleSubmit} disabled={submitting}
+            className="h-9 px-5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-60">
+            {submitting ? "Creating..." : "Create Task"}
+          </button>
         </div>
       </div>
     </div>
@@ -80,22 +91,25 @@ export default function Tasks() {
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
 
-  const filtered = useMemo(() => {
-    return tasks.filter(t => {
-      const q = search.toLowerCase();
-      const matchSearch = !q || t.title.toLowerCase().includes(q) || t.description.toLowerCase().includes(q);
-      if (!matchSearch) return false;
-      if (statusTab === "open") return !t.completed;
-      return t.completed;
-    });
-  }, [tasks, statusTab, search]);
+  const normalized = useMemo(
+    () => tasks.map((t) => ({ ...t, priority: normalizePriority(t.priority) })),
+    [tasks],
+  );
 
-  const openCount = tasks.filter(t => !t.completed).length;
-  const completedCount = tasks.filter(t => t.completed).length;
+  const openCount = normalized.filter((t) => !t.completed).length;
+  const completedCount = normalized.filter((t) => t.completed).length;
+
+  const filtered = useMemo(() => {
+    return normalized.filter((t) => {
+      const q = search.toLowerCase();
+      const matchSearch = !q || t.title.toLowerCase().includes(q) || (t.description ?? "").toLowerCase().includes(q);
+      if (!matchSearch) return false;
+      return statusTab === "open" ? !t.completed : t.completed;
+    });
+  }, [normalized, statusTab, search]);
 
   const toggleComplete = useCallback((task: DbTask) => {
     updateTask.mutate({ id: task.id, completed: !task.completed });
-    toast.success(task.completed ? "Task reopened" : "Task completed");
   }, [updateTask]);
 
   return (
@@ -114,7 +128,7 @@ export default function Tasks() {
         <div className="flex items-center gap-3 flex-wrap">
           <div className="relative flex-1 min-w-[200px] max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input type="text" placeholder="Search tasks..." value={search} onChange={e => setSearch(e.target.value)}
+            <input type="text" placeholder="Search tasks..." value={search} onChange={(e) => setSearch(e.target.value)}
               className="w-full h-9 pl-9 pr-4 rounded-md bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors" />
           </div>
           <div className="flex items-center gap-1.5">
@@ -136,7 +150,7 @@ export default function Tasks() {
               {statusTab === "completed" ? "No completed tasks" : "No open tasks"}
             </h3>
             <p className="text-sm text-muted-foreground mb-6 max-w-sm">
-              {tasks.length === 0 ? "Create your first task to stay organized" : statusTab === "open" ? "All caught up!" : "Complete some tasks to see them here"}
+              {tasks.length === 0 ? "Create your first task to stay organized" : statusTab === "open" ? "All caught up." : "Complete some tasks to see them here"}
             </p>
             {tasks.length === 0 && (
               <button onClick={() => setShowModal(true)} className="h-9 px-4 flex items-center gap-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors">
@@ -146,20 +160,22 @@ export default function Tasks() {
           </div>
         ) : (
           <div className="space-y-1">
-            {filtered.map(task => (
+            {filtered.map((task) => (
               <div key={task.id} className="flex items-start gap-3 py-3 px-4 rounded-lg hover:bg-secondary/30 transition-colors group bg-card border border-border">
-                <button onClick={() => toggleComplete(task)} className="mt-0.5 shrink-0">
+                <button onClick={() => toggleComplete(task)} className="mt-0.5 shrink-0" disabled={updateTask.isPending}>
                   {task.completed ? <CheckCircle2 className="h-5 w-5 text-success" /> : <Circle className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />}
                 </button>
                 <div className="flex-1 min-w-0">
                   <p className={`text-sm font-medium ${task.completed ? "text-muted-foreground line-through" : "text-foreground"}`}>{task.title}</p>
                   {task.description && <p className="text-xs text-muted-foreground mt-0.5 truncate">{task.description}</p>}
                   <div className="flex items-center gap-3 mt-1.5">
-                    <StatusBadge variant={priorityVariant(task.priority)}>{task.priority}</StatusBadge>
-                    {task.due_date && (
+                    <StatusBadge variant={priorityVariant(task.priority)}>{getPriorityLabel(task.priority)}</StatusBadge>
+                    {task.due_date ? (
                       <span className={`text-xs px-1.5 py-0.5 rounded ${dueBadgeClass(task.due_date)}`}>
-                        {new Date(task.due_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                        {formatDate(task.due_date)}
                       </span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">No date set</span>
                     )}
                   </div>
                 </div>
@@ -170,7 +186,7 @@ export default function Tasks() {
           </div>
         )}
       </div>
-      <NewTaskModal open={showModal} onClose={() => setShowModal(false)} onSubmit={t => createTask.mutate(t)} />
+      <NewTaskModal open={showModal} onClose={() => setShowModal(false)} onSubmit={(t) => createTask.mutate(t)} submitting={createTask.isPending} />
     </AppLayout>
   );
 }
