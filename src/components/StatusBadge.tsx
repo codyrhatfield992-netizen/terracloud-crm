@@ -1,4 +1,10 @@
 import { ReactNode } from "react";
+import {
+  normalizePriority,
+  normalizeStage,
+  normalizePropertyStatus,
+  normalizeContactType,
+} from "@/lib/constants";
 
 interface StatusBadgeProps {
   children: ReactNode;
@@ -17,7 +23,9 @@ const dotColor: Record<string, string> = {
 
 export default function StatusBadge({ children, variant = "default", className = "" }: StatusBadgeProps) {
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium bg-secondary text-muted-foreground border border-border ${className}`}>
+    <span
+      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium bg-secondary text-muted-foreground border border-border ${className}`}
+    >
       <span className={`h-1.5 w-1.5 rounded-full ${dotColor[variant] ?? dotColor.default}`} />
       {children}
     </span>
@@ -25,16 +33,16 @@ export default function StatusBadge({ children, variant = "default", className =
 }
 
 export function priorityVariant(p: string): StatusBadgeProps["variant"] {
-  switch (p) {
-    case "Urgent": return "destructive";
-    case "High": return "warning";
-    case "Medium": return "primary";
+  switch (normalizePriority(p)) {
+    case "urgent": return "destructive";
+    case "high": return "warning";
+    case "medium": return "primary";
     default: return "outline";
   }
 }
 
 export function stageVariant(s: string): StatusBadgeProps["variant"] {
-  switch (s) {
+  switch (normalizeStage(s)) {
     case "closed": return "success";
     case "dead": return "destructive";
     case "contract": return "warning";
@@ -44,11 +52,20 @@ export function stageVariant(s: string): StatusBadgeProps["variant"] {
 }
 
 export function propertyStatusVariant(s: string): StatusBadgeProps["variant"] {
-  switch (s) {
-    case "Available": return "success";
-    case "Under Contract": return "warning";
-    case "Sold": return "primary";
-    case "Off Market": return "outline";
+  switch (normalizePropertyStatus(s)) {
+    case "available": return "success";
+    case "under_contract": return "warning";
+    case "sold": return "primary";
+    case "off_market": return "outline";
     default: return "default";
+  }
+}
+
+export function contactTypeVariant(t: string): StatusBadgeProps["variant"] {
+  switch (normalizeContactType(t)) {
+    case "seller": return "primary";
+    case "buyer": return "success";
+    case "agent": return "warning";
+    default: return "outline";
   }
 }
