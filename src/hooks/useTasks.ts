@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { queryKeys } from "@/lib/queryClient";
 import { toast } from "sonner";
 
 export interface DbTask {
@@ -20,11 +21,14 @@ export interface DbTask {
 export function useTasks() {
   const { user } = useAuth();
   return useQuery({
-    queryKey: ["tasks"],
+    queryKey: queryKeys.tasks.all,
     queryFn: async () => {
-      const { data, error } = await supabase.from("tasks").select("*").order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("tasks")
+        .select("*")
+        .order("created_at", { ascending: false });
       if (error) throw error;
-      return data as unknown as DbTask[];
+      return (data ?? []) as unknown as DbTask[];
     },
     enabled: !!user,
   });
@@ -35,11 +39,18 @@ export function useCreateTask() {
   const { user } = useAuth();
   return useMutation({
     mutationFn: async (task: Partial<DbTask>) => {
-      const { data, error } = await supabase.from("tasks").insert({ ...task, user_id: user!.id } as any).select().single();
+      const { data, error } = await supabase
+        .from("tasks")
+        .insert({ ...task, user_id: user!.id } as any)
+        .select()
+        .single();
       if (error) throw error;
-      return data;
+      return data as unknown as DbTask;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["tasks"] }); toast.success("Task created"); },
+    onSuccess: (created) => {
+      qc.setQueryData<DbTask[]>(queryKeys.tasks.all, (prev = []) => [created, ...prev]);
+      toast.success("Task created");
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 }
@@ -48,11 +59,35 @@ export function useUpdateTask() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<DbTask> & { id: string }) => {
-      const { error } = await supabase.from("tasks").update(updates as any).eq("id", id);
+      const { data, error } = await supabase
+        .from("tasks")
+        .update(updates as any)
+        .eq("id", id)
+        .select()
+        .single();
       if (error) throw error;
+      return data as unknown as DbTask;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["tasks"] }); },
-    onError: (e: Error) => toast.error(e.message),
+    onMutate: async (vars) => {
+      await qc.cancelQueries({ queryKey: queryKeys.tasks.all });
+      const prev = qc.getQueryData<DbTask[]>(queryKeys.tasks.all);
+      if (prev) {
+        qc.setQueryData<DbTask[]>(
+          queryKeys.tasks.all,
+          prev.map((t) => (t.id === vars.id ? { ...t, ...vars } : t)),
+        );
+      }
+      return { prev };
+    },
+    onError: (e: Error, _vars, ctx) => {
+      if (ctx?.prev) qc.setQueryData(queryKeys.tasks.all, ctx.prev);
+      toast.error(e.message);
+    },
+    onSuccess: (saved) => {
+      qc.setQueryData<DbTask[]>(queryKeys.tasks.all, (prev = []) =>
+        prev.map((t) => (t.id === saved.id ? saved : t)),
+      );
+    },
   });
 }
 
@@ -62,8 +97,18 @@ export function useDeleteTask() {
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("tasks").delete().eq("id", id);
       if (error) throw error;
+      return id;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["tasks"] }); toast.success("Task deleted"); },
-    onError: (e: Error) => toast.error(e.message),
+    onMutate: async (id) => {
+      await qc.cancelQueries({ queryKey: queryKeys.tasks.all });
+      const prev = qc.getQueryData<DbTask[]>(queryKeys.tasks.all);
+      if (prev) qc.setQueryData<DbTask[]>(queryKeys.tasks.all, prev.filter((t) => t.id !== id));
+      return { prev };
+    },
+    onError: (e: Error, _id, ctx) => {
+      if (ctx?.prev) qc.setQueryData(queryKeys.tasks.all, ctx.prev);
+      toast.error(e.message);
+    },
+    onSuccess: () => toast.success("Task deleted"),
   });
 }

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { queryKeys } from "@/lib/queryClient";
 import { toast } from "sonner";
 
 export interface DbMeeting {
@@ -20,11 +21,14 @@ export interface DbMeeting {
 export function useMeetings() {
   const { user } = useAuth();
   return useQuery({
-    queryKey: ["meetings"],
+    queryKey: queryKeys.meetings.all,
     queryFn: async () => {
-      const { data, error } = await supabase.from("meetings").select("*").order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("meetings")
+        .select("*")
+        .order("date", { ascending: true });
       if (error) throw error;
-      return data as unknown as DbMeeting[];
+      return (data ?? []) as unknown as DbMeeting[];
     },
     enabled: !!user,
   });
@@ -35,11 +39,22 @@ export function useCreateMeeting() {
   const { user } = useAuth();
   return useMutation({
     mutationFn: async (meeting: Partial<DbMeeting>) => {
-      const { data, error } = await supabase.from("meetings").insert({ ...meeting, user_id: user!.id } as any).select().single();
+      const { data, error } = await supabase
+        .from("meetings")
+        .insert({ ...meeting, user_id: user!.id } as any)
+        .select()
+        .single();
       if (error) throw error;
-      return data;
+      return data as unknown as DbMeeting;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["meetings"] }); toast.success("Meeting scheduled"); },
+    onSuccess: (created) => {
+      qc.setQueryData<DbMeeting[]>(queryKeys.meetings.all, (prev = []) => {
+        const next = [...prev, created];
+        next.sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+        return next;
+      });
+      toast.success("Meeting scheduled");
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 }
@@ -50,8 +65,18 @@ export function useDeleteMeeting() {
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("meetings").delete().eq("id", id);
       if (error) throw error;
+      return id;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["meetings"] }); toast.success("Meeting deleted"); },
-    onError: (e: Error) => toast.error(e.message),
+    onMutate: async (id) => {
+      await qc.cancelQueries({ queryKey: queryKeys.meetings.all });
+      const prev = qc.getQueryData<DbMeeting[]>(queryKeys.meetings.all);
+      if (prev) qc.setQueryData<DbMeeting[]>(queryKeys.meetings.all, prev.filter((m) => m.id !== id));
+      return { prev };
+    },
+    onError: (e: Error, _id, ctx) => {
+      if (ctx?.prev) qc.setQueryData(queryKeys.meetings.all, ctx.prev);
+      toast.error(e.message);
+    },
+    onSuccess: () => toast.success("Meeting deleted"),
   });
 }
