@@ -2,26 +2,18 @@ import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Search, X, ArrowUpDown, ArrowUp, ArrowDown, Users } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
-import StatusBadge from "@/components/StatusBadge";
+import StatusBadge, { contactTypeVariant } from "@/components/StatusBadge";
 import { useContacts, useCreateContact, type DbContact } from "@/hooks/useContacts";
 import { Skeleton } from "@/components/ui/skeleton";
-
-const TYPES = ["Seller", "Buyer", "Agent", "Other"] as const;
-
-const typeVariant = (t: string) => {
-  switch (t) {
-    case "Seller": return "primary" as const;
-    case "Buyer": return "success" as const;
-    case "Agent": return "warning" as const;
-    default: return "outline" as const;
-  }
-};
+import { CONTACT_TYPES, formatDate, getContactTypeLabel, normalizeContactType } from "@/lib/constants";
 
 type SortKey = "name" | "email" | "phone" | "type" | "created_at";
 type SortDir = "asc" | "desc";
 
-function NewContactModal({ open, onClose, onSubmit }: { open: boolean; onClose: () => void; onSubmit: (c: Partial<DbContact>) => void }) {
-  const [form, setForm] = useState({ firstName: "", lastName: "", email: "", phone: "", type: "Seller", source: "", tags: "" });
+function NewContactModal({
+  open, onClose, onSubmit, submitting,
+}: { open: boolean; onClose: () => void; onSubmit: (c: Partial<DbContact>) => void; submitting: boolean }) {
+  const [form, setForm] = useState({ firstName: "", lastName: "", email: "", phone: "", type: "seller", source: "", tags: "" });
   const [errors, setErrors] = useState<Record<string, boolean>>({});
   if (!open) return null;
 
@@ -37,11 +29,11 @@ function NewContactModal({ open, onClose, onSubmit }: { open: boolean; onClose: 
       phone: form.phone,
       type: form.type,
       source: form.source,
-      tags: form.tags ? form.tags.split(",").map(t => t.trim()).filter(Boolean) : [],
+      tags: form.tags ? form.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
     });
-    onClose();
-    setForm({ firstName: "", lastName: "", email: "", phone: "", type: "Seller", source: "", tags: "" });
+    setForm({ firstName: "", lastName: "", email: "", phone: "", type: "seller", source: "", tags: "" });
     setErrors({});
+    onClose();
   };
 
   const inputClass = (field: string) =>
@@ -59,63 +51,50 @@ function NewContactModal({ open, onClose, onSubmit }: { open: boolean; onClose: 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1">First Name *</label>
-              <input value={form.firstName} onChange={e => { setForm(f => ({ ...f, firstName: e.target.value })); setErrors(er => ({ ...er, firstName: false })); }} placeholder="John" className={inputClass("firstName")} />
+              <input value={form.firstName} onChange={(e) => { setForm((f) => ({ ...f, firstName: e.target.value })); setErrors((er) => ({ ...er, firstName: false })); }} placeholder="John" className={inputClass("firstName")} />
               {errors.firstName && <p className="text-xs text-destructive mt-1">Required</p>}
             </div>
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1">Last Name *</label>
-              <input value={form.lastName} onChange={e => { setForm(f => ({ ...f, lastName: e.target.value })); setErrors(er => ({ ...er, lastName: false })); }} placeholder="Doe" className={inputClass("lastName")} />
+              <input value={form.lastName} onChange={(e) => { setForm((f) => ({ ...f, lastName: e.target.value })); setErrors((er) => ({ ...er, lastName: false })); }} placeholder="Doe" className={inputClass("lastName")} />
               {errors.lastName && <p className="text-xs text-destructive mt-1">Required</p>}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1">Email</label>
-              <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="john@email.com" className={inputClass("")} />
+              <input type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} placeholder="john@email.com" className={inputClass("")} />
             </div>
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1">Phone</label>
-              <input type="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="(512) 555-0000" className={inputClass("")} />
+              <input type="tel" value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} placeholder="(512) 555-0000" className={inputClass("")} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1">Contact Type *</label>
-              <select value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))} className="w-full h-9 px-3 rounded-md bg-secondary border border-border text-sm text-foreground focus:outline-none focus:border-primary">
-                {TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+              <select value={form.type} onChange={(e) => setForm((f) => ({ ...f, type: e.target.value }))}
+                className="w-full h-9 px-3 rounded-md bg-secondary border border-border text-sm text-foreground focus:outline-none focus:border-primary">
+                {CONTACT_TYPES.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1">Source</label>
-              <input value={form.source} onChange={e => setForm(f => ({ ...f, source: e.target.value }))} placeholder="Referral from John" className={inputClass("")} />
+              <input value={form.source} onChange={(e) => setForm((f) => ({ ...f, source: e.target.value }))} placeholder="Referral from John" className={inputClass("")} />
             </div>
           </div>
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1">Tags</label>
-            <input value={form.tags} onChange={e => setForm(f => ({ ...f, tags: e.target.value }))} placeholder="Motivated, Cash Buyer (comma separated)" className={inputClass("")} />
+            <input value={form.tags} onChange={(e) => setForm((f) => ({ ...f, tags: e.target.value }))} placeholder="Motivated, Cash Buyer (comma separated)" className={inputClass("")} />
           </div>
         </div>
         <div className="flex items-center justify-end gap-3 p-6 border-t border-border">
           <button onClick={onClose} className="h-9 px-4 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Cancel</button>
-          <button onClick={handleSubmit} className="h-9 px-5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors">Create Contact</button>
+          <button onClick={handleSubmit} disabled={submitting} className="h-9 px-5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-60">
+            {submitting ? "Creating..." : "Create Contact"}
+          </button>
         </div>
       </div>
-    </div>
-  );
-}
-
-function TableSkeleton() {
-  return (
-    <div className="bg-card border border-border rounded-lg p-6 space-y-4">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="flex items-center gap-4">
-          <Skeleton className="h-4 w-40" />
-          <Skeleton className="h-4 w-32" />
-          <Skeleton className="h-4 w-28" />
-          <Skeleton className="h-4 w-16" />
-          <Skeleton className="h-4 w-24" />
-        </div>
-      ))}
     </div>
   );
 }
@@ -129,22 +108,28 @@ export default function Contacts() {
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
 
+  const normalized = useMemo(
+    () => contacts.map((c) => ({ ...c, type: normalizeContactType(c.type) })),
+    [contacts],
+  );
+
   const filtered = useMemo(() => {
-    let result = contacts.filter(c => {
+    const result = normalized.filter((c) => {
       const q = search.toLowerCase();
-      const matchSearch = !q || c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q) || c.phone.includes(q);
+      const matchSearch = !q || c.name.toLowerCase().includes(q) || (c.email ?? "").toLowerCase().includes(q) || (c.phone ?? "").includes(q);
       const matchType = typeFilter.length === 0 || typeFilter.includes(c.type);
       return matchSearch && matchType;
     });
     result.sort((a, b) => {
-      const aVal = a[sortKey]; const bVal = b[sortKey];
+      const aVal = (a as any)[sortKey];
+      const bVal = (b as any)[sortKey];
       return sortDir === "asc" ? String(aVal).localeCompare(String(bVal)) : String(bVal).localeCompare(String(aVal));
     });
     return result;
-  }, [contacts, search, typeFilter, sortKey, sortDir]);
+  }, [normalized, search, typeFilter, sortKey, sortDir]);
 
   const handleSort = (key: SortKey) => {
-    if (sortKey === key) setSortDir(d => d === "asc" ? "desc" : "asc");
+    if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     else { setSortKey(key); setSortDir("asc"); }
   };
 
@@ -153,7 +138,7 @@ export default function Contacts() {
     return sortDir === "asc" ? <ArrowUp className="h-3 w-3 ml-1 text-primary" /> : <ArrowDown className="h-3 w-3 ml-1 text-primary" />;
   };
 
-  const toggleType = (t: string) => setTypeFilter(f => f.includes(t) ? f.filter(x => x !== t) : [...f, t]);
+  const toggleType = (t: string) => setTypeFilter((f) => (f.includes(t) ? f.filter((x) => x !== t) : [...f, t]));
 
   return (
     <AppLayout>
@@ -171,20 +156,28 @@ export default function Contacts() {
         <div className="flex items-center gap-3 flex-wrap">
           <div className="relative flex-1 min-w-[200px] max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input type="text" placeholder="Search by name, email, or phone..." value={search} onChange={e => setSearch(e.target.value)}
+            <input type="text" placeholder="Search by name, email, or phone..." value={search} onChange={(e) => setSearch(e.target.value)}
               className="w-full h-9 pl-9 pr-4 rounded-md bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors" />
           </div>
           <div className="flex items-center gap-1.5">
-            {TYPES.map(t => (
-              <button key={t} onClick={() => toggleType(t)}
-                className={`px-2.5 py-1.5 rounded text-xs font-medium transition-colors ${typeFilter.includes(t) ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}>
-                {t}
+            {CONTACT_TYPES.map((t) => (
+              <button key={t.id} onClick={() => toggleType(t.id)}
+                className={`px-2.5 py-1.5 rounded text-xs font-medium transition-colors ${typeFilter.includes(t.id) ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}>
+                {t.label}
               </button>
             ))}
           </div>
         </div>
 
-        {isLoading ? <TableSkeleton /> : filtered.length === 0 ? (
+        {isLoading ? (
+          <div className="bg-card border border-border rounded-lg p-6 space-y-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-4">
+                <Skeleton className="h-4 w-40" /><Skeleton className="h-4 w-32" /><Skeleton className="h-4 w-28" /><Skeleton className="h-4 w-16" /><Skeleton className="h-4 w-24" />
+              </div>
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <Users className="h-12 w-12 text-muted-foreground/30 mb-4" />
             <h3 className="text-lg font-medium text-foreground mb-1">No contacts found</h3>
@@ -221,10 +214,10 @@ export default function Contacts() {
                       <td className="px-4 py-3">
                         <Link to={`/contacts/${c.id}`} className="text-sm font-medium text-foreground hover:text-primary transition-colors">{c.name}</Link>
                       </td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground">{c.email}</td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground">{c.phone}</td>
-                      <td className="px-4 py-3"><StatusBadge variant={typeVariant(c.type)}>{c.type}</StatusBadge></td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground">{new Date(c.created_at).toLocaleDateString()}</td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">{c.email || "—"}</td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">{c.phone || "—"}</td>
+                      <td className="px-4 py-3"><StatusBadge variant={contactTypeVariant(c.type)}>{getContactTypeLabel(c.type)}</StatusBadge></td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">{formatDate(c.created_at)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -233,7 +226,7 @@ export default function Contacts() {
           </div>
         )}
       </div>
-      <NewContactModal open={showModal} onClose={() => setShowModal(false)} onSubmit={c => createContact.mutate(c)} />
+      <NewContactModal open={showModal} onClose={() => setShowModal(false)} onSubmit={(c) => createContact.mutate(c)} submitting={createContact.isPending} />
     </AppLayout>
   );
 }

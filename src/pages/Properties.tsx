@@ -4,19 +4,42 @@ import { LayoutGrid, List, Plus, Search, Building2, Bed, Bath, Maximize, X, Arro
 import AppLayout from "@/components/AppLayout";
 import StatusBadge, { propertyStatusVariant } from "@/components/StatusBadge";
 import { useProperties, useCreateProperty, type DbProperty } from "@/hooks/useProperties";
-import { formatCurrency } from "@/lib/constants";
+import {
+  PROPERTY_STATUSES,
+  PROPERTY_TYPES,
+  formatCurrency,
+  formatDate,
+  getPropertyStatusLabel,
+  normalizePropertyStatus,
+} from "@/lib/constants";
 import { Skeleton } from "@/components/ui/skeleton";
-
-const PROPERTY_TYPES = ["Single Family", "Multi Family", "Condo", "Townhouse", "Land", "Commercial"] as const;
-const STATUSES = ["Available", "Under Contract", "Sold", "Off Market"] as const;
 
 type SortKey = "address" | "city" | "property_type" | "beds" | "baths" | "sqft" | "arv" | "asking_price" | "status" | "created_at";
 type SortDir = "asc" | "desc";
 
-function NewPropertyModal({ open, onClose, onSubmit }: { open: boolean; onClose: () => void; onSubmit: (p: Partial<DbProperty>) => void }) {
-  const [form, setForm] = useState({ address: "", city: "", state: "", zip: "", property_type: "Single Family", beds: "", baths: "", sqft: "", arv: "", asking_price: "" });
+function NewPropertyModal({
+  open,
+  onClose,
+  onSubmit,
+  submitting,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (p: Partial<DbProperty>) => void;
+  submitting: boolean;
+}) {
+  const [form, setForm] = useState({
+    address: "", city: "", state: "", zip: "",
+    property_type: "Single Family",
+    beds: "", baths: "", sqft: "", arv: "", asking_price: "",
+  });
   const [errors, setErrors] = useState<Record<string, boolean>>({});
   if (!open) return null;
+
+  const reset = () => {
+    setForm({ address: "", city: "", state: "", zip: "", property_type: "Single Family", beds: "", baths: "", sqft: "", arv: "", asking_price: "" });
+    setErrors({});
+  };
 
   const handleSubmit = () => {
     const e: Record<string, boolean> = {};
@@ -35,9 +58,10 @@ function NewPropertyModal({ open, onClose, onSubmit }: { open: boolean; onClose:
       sqft: parseInt(form.sqft) || 0,
       arv: parseInt(form.arv) || 0,
       asking_price: parseInt(form.asking_price) || 0,
+      status: "available",
     });
+    reset();
     onClose();
-    setForm({ address: "", city: "", state: "", zip: "", property_type: "Single Family", beds: "", baths: "", sqft: "", arv: "", asking_price: "" });
   };
 
   const inputClass = (field: string) =>
@@ -52,48 +76,60 @@ function NewPropertyModal({ open, onClose, onSubmit }: { open: boolean; onClose:
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></button>
         </div>
         <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto scrollbar-thin">
-          <div className="col-span-2">
+          <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1">Street Address *</label>
-            <input value={form.address} onChange={e => { setForm(f => ({ ...f, address: e.target.value })); setErrors(er => ({ ...er, address: false })); }} placeholder="123 Main Street" className={inputClass("address")} />
+            <input value={form.address} onChange={(e) => { setForm((f) => ({ ...f, address: e.target.value })); setErrors((er) => ({ ...er, address: false })); }} placeholder="123 Main Street" className={inputClass("address")} />
             {errors.address && <p className="text-xs text-destructive mt-1">Required</p>}
           </div>
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1">City *</label>
-              <input value={form.city} onChange={e => { setForm(f => ({ ...f, city: e.target.value })); setErrors(er => ({ ...er, city: false })); }} placeholder="Austin" className={inputClass("city")} />
+              <input value={form.city} onChange={(e) => { setForm((f) => ({ ...f, city: e.target.value })); setErrors((er) => ({ ...er, city: false })); }} placeholder="Austin" className={inputClass("city")} />
             </div>
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1">State</label>
-              <input value={form.state} onChange={e => setForm(f => ({ ...f, state: e.target.value }))} placeholder="TX" className={inputClass("")} />
+              <input value={form.state} onChange={(e) => setForm((f) => ({ ...f, state: e.target.value }))} placeholder="TX" className={inputClass("")} />
             </div>
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1">Zip</label>
-              <input value={form.zip} onChange={e => setForm(f => ({ ...f, zip: e.target.value }))} placeholder="78701" className={inputClass("")} />
+              <input value={form.zip} onChange={(e) => setForm((f) => ({ ...f, zip: e.target.value }))} placeholder="78701" className={inputClass("")} />
             </div>
           </div>
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1">Property Type</label>
-            <select value={form.property_type} onChange={e => setForm(f => ({ ...f, property_type: e.target.value }))} className="w-full h-9 px-3 rounded-md bg-secondary border border-border text-sm text-foreground focus:outline-none focus:border-primary">
-              {PROPERTY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+            <select value={form.property_type} onChange={(e) => setForm((f) => ({ ...f, property_type: e.target.value }))} className="w-full h-9 px-3 rounded-md bg-secondary border border-border text-sm text-foreground focus:outline-none focus:border-primary">
+              {PROPERTY_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
           <div className="grid grid-cols-3 gap-4">
-            <div><label className="block text-xs font-medium text-muted-foreground mb-1">Beds</label><input type="number" value={form.beds} onChange={e => setForm(f => ({ ...f, beds: e.target.value }))} placeholder="3" className={inputClass("")} /></div>
-            <div><label className="block text-xs font-medium text-muted-foreground mb-1">Baths</label><input type="number" step="0.5" value={form.baths} onChange={e => setForm(f => ({ ...f, baths: e.target.value }))} placeholder="2" className={inputClass("")} /></div>
-            <div><label className="block text-xs font-medium text-muted-foreground mb-1">Sq Ft</label><input type="number" value={form.sqft} onChange={e => setForm(f => ({ ...f, sqft: e.target.value }))} placeholder="1850" className={inputClass("")} /></div>
+            <div><label className="block text-xs font-medium text-muted-foreground mb-1">Beds</label><input type="number" value={form.beds} onChange={(e) => setForm((f) => ({ ...f, beds: e.target.value }))} placeholder="3" className={inputClass("")} /></div>
+            <div><label className="block text-xs font-medium text-muted-foreground mb-1">Baths</label><input type="number" step="0.5" value={form.baths} onChange={(e) => setForm((f) => ({ ...f, baths: e.target.value }))} placeholder="2" className={inputClass("")} /></div>
+            <div><label className="block text-xs font-medium text-muted-foreground mb-1">Sq Ft</label><input type="number" value={form.sqft} onChange={(e) => setForm((f) => ({ ...f, sqft: e.target.value }))} placeholder="1850" className={inputClass("")} /></div>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div><label className="block text-xs font-medium text-muted-foreground mb-1">ARV</label><input type="number" value={form.arv} onChange={e => setForm(f => ({ ...f, arv: e.target.value }))} placeholder="385000" className={inputClass("")} /></div>
-            <div><label className="block text-xs font-medium text-muted-foreground mb-1">Asking Price</label><input type="number" value={form.asking_price} onChange={e => setForm(f => ({ ...f, asking_price: e.target.value }))} placeholder="275000" className={inputClass("")} /></div>
+            <div><label className="block text-xs font-medium text-muted-foreground mb-1">ARV</label><input type="number" value={form.arv} onChange={(e) => setForm((f) => ({ ...f, arv: e.target.value }))} placeholder="385000" className={inputClass("")} /></div>
+            <div><label className="block text-xs font-medium text-muted-foreground mb-1">Asking Price</label><input type="number" value={form.asking_price} onChange={(e) => setForm((f) => ({ ...f, asking_price: e.target.value }))} placeholder="275000" className={inputClass("")} /></div>
           </div>
         </div>
         <div className="flex items-center justify-end gap-3 p-6 border-t border-border">
           <button onClick={onClose} className="h-9 px-4 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground">Cancel</button>
-          <button onClick={handleSubmit} className="h-9 px-5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90">Create Property</button>
+          <button onClick={handleSubmit} disabled={submitting} className="h-9 px-5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-60">
+            {submitting ? "Creating..." : "Create Property"}
+          </button>
         </div>
       </div>
     </div>
   );
+}
+
+function statusOverlayColor(s: string) {
+  switch (normalizePropertyStatus(s)) {
+    case "available": return "bg-success";
+    case "under_contract": return "bg-warning";
+    case "sold": return "bg-primary";
+    case "off_market": return "bg-muted-foreground";
+    default: return "bg-muted";
+  }
 }
 
 export default function Properties() {
@@ -106,24 +142,29 @@ export default function Properties() {
   const [sortKey, setSortKey] = useState<SortKey>("created_at");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
+  const normalized = useMemo(
+    () => properties.map((p) => ({ ...p, status: normalizePropertyStatus(p.status) })),
+    [properties],
+  );
+
   const filtered = useMemo(() => {
-    let result = properties.filter(p => {
+    const result = normalized.filter((p) => {
       const q = search.toLowerCase();
       const matchSearch = !q || p.address.toLowerCase().includes(q) || p.city.toLowerCase().includes(q);
       const matchStatus = statusFilter.length === 0 || statusFilter.includes(p.status);
       return matchSearch && matchStatus;
     });
     result.sort((a, b) => {
-      const aVal = a[sortKey as keyof DbProperty];
-      const bVal = b[sortKey as keyof DbProperty];
+      const aVal = (a as any)[sortKey];
+      const bVal = (b as any)[sortKey];
       if (typeof aVal === "number" && typeof bVal === "number") return sortDir === "asc" ? aVal - bVal : bVal - aVal;
       return sortDir === "asc" ? String(aVal).localeCompare(String(bVal)) : String(bVal).localeCompare(String(aVal));
     });
     return result;
-  }, [properties, search, statusFilter, sortKey, sortDir]);
+  }, [normalized, search, statusFilter, sortKey, sortDir]);
 
   const handleSort = (key: SortKey) => {
-    if (sortKey === key) setSortDir(d => d === "asc" ? "desc" : "asc");
+    if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     else { setSortKey(key); setSortDir("asc"); }
   };
 
@@ -132,23 +173,15 @@ export default function Properties() {
     return sortDir === "asc" ? <ArrowUp className="h-3 w-3 ml-1 text-primary" /> : <ArrowDown className="h-3 w-3 ml-1 text-primary" />;
   };
 
-  const statusOverlayColor = (s: string) => {
-    switch (s) {
-      case "Available": return "bg-primary";
-      case "Under Contract": return "bg-warning";
-      case "Sold": return "bg-success";
-      case "Off Market": return "bg-muted-foreground";
-      default: return "bg-muted";
-    }
-  };
-
   return (
     <AppLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-foreground">Properties</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">{filtered.length} propert{filtered.length !== 1 ? "ies" : "y"}</p>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              {filtered.length} propert{filtered.length !== 1 ? "ies" : "y"}
+            </p>
           </div>
           <button onClick={() => setShowModal(true)} className="h-9 px-4 flex items-center gap-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors">
             <Plus className="h-4 w-4" /> New Property
@@ -158,14 +191,17 @@ export default function Properties() {
         <div className="flex items-center gap-3 flex-wrap">
           <div className="relative flex-1 min-w-[200px] max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input type="text" placeholder="Search by address..." value={search} onChange={e => setSearch(e.target.value)}
+            <input type="text" placeholder="Search by address..." value={search} onChange={(e) => setSearch(e.target.value)}
               className="w-full h-9 pl-9 pr-4 rounded-md bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors" />
           </div>
           <div className="flex items-center gap-1.5">
-            {STATUSES.map(s => (
-              <button key={s} onClick={() => setStatusFilter(f => f.includes(s) ? f.filter(x => x !== s) : [...f, s])}
-                className={`px-2.5 py-1.5 rounded text-xs font-medium transition-colors ${statusFilter.includes(s) ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}>
-                {s}
+            {PROPERTY_STATUSES.map((s) => (
+              <button
+                key={s.id}
+                onClick={() => setStatusFilter((f) => (f.includes(s.id) ? f.filter((x) => x !== s.id) : [...f, s.id]))}
+                className={`px-2.5 py-1.5 rounded text-xs font-medium transition-colors ${statusFilter.includes(s.id) ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}
+              >
+                {s.label}
               </button>
             ))}
           </div>
@@ -197,11 +233,13 @@ export default function Properties() {
           </div>
         ) : view === "cards" ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filtered.map(p => (
+            {filtered.map((p) => (
               <Link key={p.id} to={`/properties/${p.id}`} className="group bg-card border border-border rounded-lg overflow-hidden hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-200">
                 <div className="relative h-[200px] bg-secondary flex items-center justify-center">
                   <Building2 className="h-10 w-10 text-muted-foreground/20" />
-                  <span className={`absolute top-3 right-3 px-2.5 py-1 rounded text-[11px] font-semibold text-primary-foreground ${statusOverlayColor(p.status)}`}>{p.status}</span>
+                  <span className={`absolute top-3 right-3 px-2.5 py-1 rounded text-[11px] font-semibold text-primary-foreground ${statusOverlayColor(p.status)}`}>
+                    {getPropertyStatusLabel(p.status)}
+                  </span>
                 </div>
                 <div className="p-4 space-y-3">
                   <div>
@@ -234,7 +272,7 @@ export default function Properties() {
                       { key: "arv" as SortKey, label: "ARV" },
                       { key: "status" as SortKey, label: "Status" },
                       { key: "created_at" as SortKey, label: "Created" },
-                    ].map(c => (
+                    ].map((c) => (
                       <th key={c.key} onClick={() => handleSort(c.key)}
                         className="text-left text-xs font-medium text-muted-foreground px-4 py-3 cursor-pointer hover:text-foreground transition-colors select-none">
                         <span className="inline-flex items-center">{c.label}<SortIcon col={c.key} /></span>
@@ -249,8 +287,8 @@ export default function Properties() {
                       <td className="px-4 py-3 text-sm text-muted-foreground">{p.city}, {p.state}</td>
                       <td className="px-4 py-3"><span className="px-2 py-0.5 rounded text-[11px] font-medium bg-secondary text-secondary-foreground">{p.property_type}</span></td>
                       <td className="px-4 py-3 text-sm font-medium text-foreground">{formatCurrency(Number(p.arv))}</td>
-                      <td className="px-4 py-3"><StatusBadge variant={propertyStatusVariant(p.status)}>{p.status}</StatusBadge></td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground">{new Date(p.created_at).toLocaleDateString()}</td>
+                      <td className="px-4 py-3"><StatusBadge variant={propertyStatusVariant(p.status)}>{getPropertyStatusLabel(p.status)}</StatusBadge></td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">{formatDate(p.created_at)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -259,7 +297,12 @@ export default function Properties() {
           </div>
         )}
       </div>
-      <NewPropertyModal open={showModal} onClose={() => setShowModal(false)} onSubmit={p => createProperty.mutate(p)} />
+      <NewPropertyModal
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        onSubmit={(p) => createProperty.mutate(p)}
+        submitting={createProperty.isPending}
+      />
     </AppLayout>
   );
 }

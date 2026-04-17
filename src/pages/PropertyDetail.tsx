@@ -1,14 +1,10 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Trash2, Building2, Bed, Bath, Maximize } from "lucide-react";
+import { ArrowLeft, Trash2, Bed, Bath, Maximize } from "lucide-react";
 import { useState } from "react";
 import AppLayout from "@/components/AppLayout";
-import StatusBadge, { propertyStatusVariant } from "@/components/StatusBadge";
 import { useProperty, useUpdateProperty, useDeleteProperty } from "@/hooks/useProperties";
-import { formatCurrency } from "@/lib/constants";
+import { PROPERTY_STATUSES, formatCurrency, formatDate, normalizePropertyStatus } from "@/lib/constants";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
-
-const STATUSES = ["Available", "Under Contract", "Sold", "Off Market"] as const;
 
 export default function PropertyDetail() {
   const { id } = useParams();
@@ -19,12 +15,28 @@ export default function PropertyDetail() {
   const [showDelete, setShowDelete] = useState(false);
 
   if (isLoading) {
-    return <AppLayout><div className="space-y-6"><Skeleton className="h-4 w-32" /><Skeleton className="h-8 w-64" /><Skeleton className="h-60 rounded-lg" /></div></AppLayout>;
+    return (
+      <AppLayout>
+        <div className="space-y-6">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-60 rounded-lg" />
+        </div>
+      </AppLayout>
+    );
   }
 
   if (!property) {
-    return <AppLayout><div className="text-center py-16 text-muted-foreground">Property not found. <Link to="/properties" className="text-primary hover:underline">Back</Link></div></AppLayout>;
+    return (
+      <AppLayout>
+        <div className="text-center py-16 text-muted-foreground">
+          Property not found. <Link to="/properties" className="text-primary hover:underline">Back</Link>
+        </div>
+      </AppLayout>
+    );
   }
+
+  const status = normalizePropertyStatus(property.status);
 
   return (
     <AppLayout>
@@ -38,9 +50,15 @@ export default function PropertyDetail() {
             <h1 className="text-2xl font-bold text-foreground">{property.address}</h1>
             <p className="text-sm text-muted-foreground mt-1">{property.city}, {property.state} {property.zip}</p>
             <div className="flex items-center gap-3 mt-3">
-              <select value={property.status} onChange={e => { updateProperty.mutate({ id: property.id, status: e.target.value }); toast.success("Status updated"); }}
-                className="h-8 px-2 rounded-md bg-secondary border border-border text-sm text-foreground focus:outline-none focus:border-primary">
-                {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+              <select
+                value={status}
+                onChange={(e) => updateProperty.mutate({ id: property.id, status: e.target.value })}
+                disabled={updateProperty.isPending}
+                className="h-8 px-2 rounded-md bg-secondary border border-border text-sm text-foreground focus:outline-none focus:border-primary disabled:opacity-60"
+              >
+                {PROPERTY_STATUSES.map((s) => (
+                  <option key={s.id} value={s.id}>{s.label}</option>
+                ))}
               </select>
               <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-secondary text-secondary-foreground">{property.property_type}</span>
             </div>
@@ -61,10 +79,10 @@ export default function PropertyDetail() {
                   {property.sqft > 0 && <span className="flex items-center gap-1.5"><Maximize className="h-4 w-4" />{property.sqft.toLocaleString()} sqft</span>}
                 </div>
               )}
-              <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">ARV</span><span className="text-sm font-medium text-foreground">{formatCurrency(Number(property.arv))}</span></div>
-              <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">Asking Price</span><span className="text-sm text-foreground">{formatCurrency(Number(property.asking_price))}</span></div>
-              <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">Offer Price</span><span className="text-sm text-foreground">{Number(property.offer_price) > 0 ? formatCurrency(Number(property.offer_price)) : "—"}</span></div>
-              <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">Created</span><span className="text-sm text-muted-foreground">{new Date(property.created_at).toLocaleDateString()}</span></div>
+              <Row label="ARV">{formatCurrency(Number(property.arv))}</Row>
+              <Row label="Asking Price">{formatCurrency(Number(property.asking_price))}</Row>
+              <Row label="Offer Price">{Number(property.offer_price) > 0 ? formatCurrency(Number(property.offer_price)) : "—"}</Row>
+              <Row label="Created">{formatDate(property.created_at)}</Row>
             </div>
           </div>
 
@@ -83,11 +101,26 @@ export default function PropertyDetail() {
             <p className="text-sm text-muted-foreground mb-6">Are you sure? This action cannot be undone.</p>
             <div className="flex justify-end gap-3">
               <button onClick={() => setShowDelete(false)} className="h-9 px-4 rounded-md text-sm text-muted-foreground hover:text-foreground">Cancel</button>
-              <button onClick={() => deleteProperty.mutate(property.id, { onSuccess: () => navigate("/properties") })} className="h-9 px-4 rounded-md bg-destructive text-destructive-foreground text-sm font-medium hover:bg-destructive/90">Delete</button>
+              <button
+                onClick={() => deleteProperty.mutate(property.id, { onSuccess: () => navigate("/properties") })}
+                disabled={deleteProperty.isPending}
+                className="h-9 px-4 rounded-md bg-destructive text-destructive-foreground text-sm font-medium hover:bg-destructive/90 disabled:opacity-60"
+              >
+                {deleteProperty.isPending ? "Deleting..." : "Delete"}
+              </button>
             </div>
           </div>
         </div>
       )}
     </AppLayout>
+  );
+}
+
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="text-sm text-foreground">{children}</span>
+    </div>
   );
 }
