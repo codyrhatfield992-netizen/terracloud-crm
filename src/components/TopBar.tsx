@@ -1,8 +1,10 @@
-import { Search, Plus, ChevronDown, Bell, LogOut, Settings, User } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { Search, Plus, Bell, LogOut, Settings } from "lucide-react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { leads, contacts, properties } from "@/data/mockData";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLeads } from "@/hooks/useLeads";
+import { useContacts } from "@/hooks/useContacts";
+import { useProperties } from "@/hooks/useProperties";
 import { toast } from "sonner";
 
 const breadcrumbMap: Record<string, string> = {
@@ -34,6 +36,9 @@ export default function TopBar() {
   const newMenuRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const { user, signOut } = useAuth();
+  const { data: leads = [] } = useLeads();
+  const { data: contacts = [] } = useContacts();
+  const { data: properties = [] } = useProperties();
 
   const breadcrumb = breadcrumbMap[location.pathname] || location.pathname.split("/").filter(Boolean).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(" / ");
 
@@ -42,13 +47,15 @@ export default function TopBar() {
     ? user.user_metadata.full_name.split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 2)
     : userEmail.slice(0, 2).toUpperCase();
 
-  const searchResults: SearchResult[] = search.length >= 2
-    ? [
-        ...leads.filter(l => l.title.toLowerCase().includes(search.toLowerCase())).slice(0, 3).map(l => ({ type: "lead" as const, id: l.id, title: l.title, subtitle: "Lead" })),
-        ...contacts.filter(c => c.name.toLowerCase().includes(search.toLowerCase())).slice(0, 3).map(c => ({ type: "contact" as const, id: c.id, title: c.name, subtitle: c.type })),
-        ...properties.filter(p => p.address.toLowerCase().includes(search.toLowerCase())).slice(0, 3).map(p => ({ type: "property" as const, id: p.id, title: p.address, subtitle: `${p.city}, ${p.state}` })),
-      ]
-    : [];
+  const searchResults: SearchResult[] = useMemo(() => {
+    if (search.length < 2) return [];
+    const q = search.toLowerCase();
+    return [
+      ...leads.filter(l => l.title.toLowerCase().includes(q)).slice(0, 3).map(l => ({ type: "lead" as const, id: l.id, title: l.title, subtitle: "Lead" })),
+      ...contacts.filter(c => c.name.toLowerCase().includes(q)).slice(0, 3).map(c => ({ type: "contact" as const, id: c.id, title: c.name, subtitle: c.type })),
+      ...properties.filter(p => p.address.toLowerCase().includes(q)).slice(0, 3).map(p => ({ type: "property" as const, id: p.id, title: p.address, subtitle: `${p.city}, ${p.state}` })),
+    ];
+  }, [search, leads, contacts, properties]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
