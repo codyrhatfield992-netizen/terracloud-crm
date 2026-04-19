@@ -21,6 +21,12 @@ import Tasks from "./pages/Tasks";
 import Meetings from "./pages/Meetings";
 import Documents from "./pages/Documents";
 import SettingsPage from "./pages/Settings";
+import CommandCenter from "./pages/CommandCenter";
+import Simulations from "./pages/Simulations";
+import SimulationDetail from "./pages/SimulationDetail";
+import DealAutopsy from "./pages/DealAutopsy";
+import DealAutopsyDetail from "./pages/DealAutopsyDetail";
+import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 
 const App = () => (
@@ -47,6 +53,15 @@ const App = () => (
             <Route path="/meetings" element={<ProtectedRoute><Meetings /></ProtectedRoute>} />
             <Route path="/documents" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+
+            {/* XR */}
+            <Route path="/command-center" element={<ProtectedRoute><CommandCenter /></ProtectedRoute>} />
+            <Route path="/simulations" element={<ProtectedRoute><Simulations /></ProtectedRoute>} />
+            <Route path="/simulations/:id" element={<ProtectedRoute><SimulationDetail /></ProtectedRoute>} />
+            <Route path="/deal-autopsy" element={<ProtectedRoute><DealAutopsy /></ProtectedRoute>} />
+            <Route path="/deal-autopsy/:id" element={<ProtectedRoute><DealAutopsyDetail /></ProtectedRoute>} />
+            <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

@@ -20,6 +20,8 @@ import {
   normalizePriority,
 } from "@/lib/constants";
 import { Skeleton } from "@/components/ui/skeleton";
+import ArchetypeBadge from "@/components/xr/ArchetypeBadge";
+import { getBuyerProfile, readinessColor } from "@/lib/intelligence";
 
 function followUpVariant(date: string | null): "destructive" | "outline" {
   return isOverdue(date) ? "destructive" : "outline";
@@ -41,11 +43,17 @@ function KanbanCard({
       to={`/leads/${lead.id}`}
       draggable
       onDragStart={(e) => { e.stopPropagation(); onDragStart(e, lead.id); }}
-      className="block bg-card border border-border rounded-lg p-3 hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-150 cursor-grab active:cursor-grabbing group"
+      className="block xr-glass rounded-lg p-3 hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-150 cursor-grab active:cursor-grabbing group"
     >
-      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors truncate">
-        {lead.title}
-      </p>
+      <div className="flex items-start justify-between gap-2 mb-1.5">
+        <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors truncate flex-1">
+          {lead.title}
+        </p>
+        <span className={`h-1.5 w-1.5 rounded-full shrink-0 mt-1.5 ${readinessColor(getBuyerProfile(lead.id).simulationReadiness)}`} title="Simulation readiness" />
+      </div>
+      <div className="mb-1.5">
+        <ArchetypeBadge archetypeId={getBuyerProfile(lead.id).archetype.id} />
+      </div>
       {contactName && <p className="text-xs text-muted-foreground mt-1.5 truncate">{contactName}</p>}
       {propertyAddress && (
         <div className="flex items-center gap-1.5 mt-0.5">

@@ -15,8 +15,28 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
+      },
+      backgroundImage: {
+        'gradient-primary': 'var(--gradient-primary)',
+        'gradient-glow': 'var(--gradient-glow)',
+        'gradient-panel': 'var(--gradient-panel)',
+        'gradient-hero': 'var(--gradient-hero)',
+      },
+      boxShadow: {
+        'glow': 'var(--shadow-glow)',
+        'panel': 'var(--shadow-panel)',
+        'elevated': 'var(--shadow-elevated)',
       },
       colors: {
+        xr: {
+          glow: 'hsl(var(--xr-glow))',
+          cyan: 'hsl(var(--xr-cyan))',
+          violet: 'hsl(var(--xr-violet))',
+          amber: 'hsl(var(--xr-amber))',
+          glass: 'hsl(var(--xr-glass))',
+          grid: 'hsl(var(--xr-grid))',
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
