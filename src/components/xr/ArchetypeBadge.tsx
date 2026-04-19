@@ -13,7 +13,7 @@ export default function ArchetypeBadge({ archetypeId, size = "sm" }: Props) {
 
   return (
     <span className={`inline-flex items-center gap-1.5 rounded-md border font-medium tracking-wide uppercase ${px} ${colorCls}`}>
-      <Brain className="h-3 w-3" />
+      <Brain className="h-3 w-3" strokeWidth={2} />
       {archetype.label}
     </span>
   );

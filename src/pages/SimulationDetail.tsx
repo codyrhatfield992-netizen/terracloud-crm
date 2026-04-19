@@ -55,7 +55,7 @@ export default function SimulationDetail() {
         </div>
 
         {/* Viewport */}
-        <SimulationViewport height="h-[520px]">
+        <SimulationViewport height="h-[520px]" variant={sim.id.charCodeAt(sim.id.length - 1) % 2 === 0 ? "bedroom" : "kitchen"}>
           <HUDOverlay
             walkthroughCoverage={sim.walkthroughCoverage}
             trust={sim.trustEnd || 60}
