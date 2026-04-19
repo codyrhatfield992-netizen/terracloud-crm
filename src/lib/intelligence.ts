@@ -213,6 +213,90 @@ export function getFitAnalysis(leadId: string, propertyId: string): FitAnalysis 
 }
 
 // ─────────────────────────────────────────────────────────────
+// Activity / Notes / Conversations (mock, deterministic)
+// ─────────────────────────────────────────────────────────────
+
+const NOTE_TEMPLATES = [
+  { type: "call", title: "Discovery call · 18 min", body: "Walked through buyer's prior home loss; loss-aversion is high. Mentioned wife is the decision blocker." },
+  { type: "email", title: "Sent comp set + tax projection", body: "Pre-loaded 3 properties under their ceiling with HOA-included utilities to defuse the fee anxiety." },
+  { type: "meeting", title: "In-person tour · Riverside", body: "Client lingered in primary suite — emotional anchor. Negative reaction to street noise; flag for next showing." },
+  { type: "note", title: "Behavioral observation", body: "Mirrors body language when in agreement. Crosses arms before objections — early-warning tell." },
+  { type: "call", title: "Follow-up call · 6 min", body: "Wanted clarity on 30-day close. Confirmed financing pre-approved at 7.1%. Spouse joining next showing." },
+  { type: "sms", title: "Confirmed Saturday tour", body: "Client requested no kids' rooms be staged — wife wants neutral baseline to project." },
+];
+
+export interface ActivityItem {
+  type: "call" | "email" | "meeting" | "note" | "sms";
+  title: string;
+  body: string;
+  timestamp: string; // ISO
+}
+
+export function getLeadActivity(leadId: string): ActivityItem[] {
+  const count = 3 + Math.floor(hash01(leadId, 30) * 3);
+  const items: ActivityItem[] = [];
+  for (let i = 0; i < count; i++) {
+    const t = NOTE_TEMPLATES[Math.floor(hash01(leadId, 30 + i) * NOTE_TEMPLATES.length)];
+    items.push({
+      type: t.type as ActivityItem["type"],
+      title: t.title,
+      body: t.body,
+      timestamp: new Date(Date.now() - (i + 1) * (1 + hash01(leadId, 40 + i) * 4) * 86400_000).toISOString(),
+    });
+  }
+  return items;
+}
+
+const MOTIVATION_TEMPLATES = [
+  "Relocating for new role · 60-day window",
+  "Outgrew current home · second child arriving",
+  "Investment portfolio rebalance · seeking yield",
+  "Downsizing post-empty-nest · prioritizing lock-and-leave",
+  "Lifestyle upgrade · wants city skyline view",
+  "Tax-driven move · cost-basis sensitive",
+];
+
+const FAMILY_TEMPLATES = [
+  "Married · 2 kids (8, 11)",
+  "Single · no dependents",
+  "Married · expecting first child",
+  "Married · empty-nesters",
+  "Domestic partnership · 1 dog",
+  "Single parent · 1 teen",
+];
+
+const TIMELINE_TEMPLATES = [
+  "Aggressive · 30-day close",
+  "Standard · 45-60 days",
+  "Flexible · 90 days",
+  "Exploratory · 6+ months",
+];
+
+export interface LeadDeepProfile {
+  motivation: string;
+  family: string;
+  timeline: string;
+  motivationScore: number; // 0-100
+  pastConversations: number;
+  budgetCeiling: number;
+  desiredType: string;
+}
+
+const DESIRED_TYPES = ["Single-Family", "Luxury Estate", "Modern Loft", "Townhome", "New Build", "Investment Multi-Family"];
+
+export function getDeepProfile(leadId: string, baseValue: number): LeadDeepProfile {
+  return {
+    motivation: pick(MOTIVATION_TEMPLATES, leadId, 50),
+    family: pick(FAMILY_TEMPLATES, leadId, 51),
+    timeline: pick(TIMELINE_TEMPLATES, leadId, 52),
+    motivationScore: range(leadId, 53, 35, 95),
+    pastConversations: range(leadId, 54, 2, 14),
+    budgetCeiling: Math.max(baseValue, 250_000) + range(leadId, 55, 0, 200_000),
+    desiredType: pick(DESIRED_TYPES, leadId, 56),
+  };
+}
+
+// ─────────────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────────────
 
@@ -221,8 +305,8 @@ export function archetypeColorClass(id: ArchetypeId): string {
     case "luxury": return "text-xr-violet bg-xr-violet/10 border-xr-violet/30";
     case "skeptical": return "text-xr-amber bg-xr-amber/10 border-xr-amber/30";
     case "family": return "text-xr-cyan bg-xr-cyan/10 border-xr-cyan/30";
-    case "first_time": return "text-primary bg-primary/10 border-primary/30";
-    case "analytical": return "text-primary bg-primary/10 border-primary/30";
+    case "first_time": return "text-foreground bg-foreground/5 border-foreground/20";
+    case "analytical": return "text-foreground bg-foreground/5 border-foreground/20";
     case "ego": return "text-destructive bg-destructive/10 border-destructive/30";
   }
 }
