@@ -156,7 +156,7 @@ export default function TopBar() {
         <div className="relative" ref={newMenuRef}>
           <button
             onClick={() => setShowNewMenu(!showNewMenu)}
-            className="h-8 px-3 flex items-center gap-1.5 rounded-md bg-gradient-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition shadow-glow"
+            className="h-8 px-3 flex items-center gap-1.5 rounded-md bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition"
           >
             <Plus className="h-4 w-4" />
             <span className="hidden sm:inline text-[13px]">New</span>

@@ -55,23 +55,23 @@ export default function CommandCenter() {
         {/* Header */}
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-widest text-primary mb-2">
-              <Sparkles className="h-3.5 w-3.5" />
+            <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.22em] text-muted-foreground mb-2">
+              <Sparkles className="h-3 w-3" />
               Lead-to-Simulation Pairing
             </div>
-            <h1 className="text-2xl font-semibold tracking-tight xr-gradient-text">Command Center</h1>
-            <p className="text-sm text-muted-foreground mt-1">Select a client and listing. Inspect fit. Launch the simulation.</p>
+            <h1 className="text-3xl font-semibold tracking-tight xr-silver-text">Command Center</h1>
+            <p className="text-sm text-muted-foreground mt-2">Select a client and listing. Inspect compatibility. Launch the rehearsal.</p>
           </div>
           <div className="flex items-center gap-2 xr-glass rounded-md p-1">
             <button
               onClick={() => setMode("desktop")}
-              className={`h-8 px-3 rounded text-xs font-mono uppercase tracking-widest flex items-center gap-1.5 transition ${mode === "desktop" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              className={`h-8 px-3 rounded text-[10px] font-mono uppercase tracking-widest flex items-center gap-1.5 transition ${mode === "desktop" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"}`}
             >
               <Monitor className="h-3.5 w-3.5" /> Desktop
             </button>
             <button
               onClick={() => setMode("vr")}
-              className={`h-8 px-3 rounded text-xs font-mono uppercase tracking-widest flex items-center gap-1.5 transition ${mode === "vr" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              className={`h-8 px-3 rounded text-[10px] font-mono uppercase tracking-widest flex items-center gap-1.5 transition ${mode === "vr" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"}`}
             >
               <Headset className="h-3.5 w-3.5" /> VR
             </button>
@@ -269,7 +269,7 @@ export default function CommandCenter() {
               </div>
               <Link
                 to="/simulations/sim_01"
-                className="w-full h-11 inline-flex items-center justify-center gap-2 rounded-md bg-gradient-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition shadow-glow"
+                className="w-full h-11 inline-flex items-center justify-center gap-2 rounded-md bg-foreground text-background text-sm font-semibold hover:bg-foreground/90 transition shadow-glow"
               >
                 <Play className="h-4 w-4 fill-current" /> Launch Simulation
                 <ChevronRight className="h-4 w-4" />
