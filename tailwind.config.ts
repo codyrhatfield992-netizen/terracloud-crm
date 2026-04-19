@@ -36,6 +36,7 @@ export default {
           amber: 'hsl(var(--xr-amber))',
           glass: 'hsl(var(--xr-glass))',
           grid: 'hsl(var(--xr-grid))',
+          silver: 'hsl(var(--xr-silver))',
         },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
