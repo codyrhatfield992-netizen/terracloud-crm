@@ -1,76 +1,46 @@
 
 
-## TerraCloud Production-Ready Transformation Plan
+## TerraCloud → TerraCloud XR Transformation Plan
 
-### Current State
-After exploring the codebase, here's what already exists:
-- **Design system**: Dark theme with Inter font, blue accent, hairline borders — mostly aligned with the request
-- **Landing page**: Professional hero + features at `/`, redirects logged-in users to `/dashboard`
-- **Auth**: Login, Signup, ProtectedRoute, AuthContext with sign out — all functional
-- **TopBar**: User dropdown with initials, email, Settings, Sign Out (red) — already matches the spec
-- **Sidebar**: Minimal with blue active indicator — already matches
-- **Pages**: Dashboard, Leads (Kanban + Table), Properties (Grid + Table), Contacts, Tasks, Documents, Meetings, Settings — all built with mock data
-- **Kanban**: Drag-and-drop on Leads page already implemented
+### Strategy
+This is a **demo-focused product evolution** for a pitch. The goal is a polished, believable XR-driven CRM — not a fully-wired simulation engine. Real CRM data (leads/properties/contacts) stays connected to Supabase. New "intelligence" fields (behavioral profile, simulation scores, trust signatures) live as **derived/synthetic data** layered on top of existing records, so the product looks alive without breaking what works.
 
-### Core Problem
-Everything runs on **hardcoded mock data** in `src/data/mockData.ts`. New users see pre-filled fake data. The request explicitly says "no false data pre loaded onto their account."
+### What changes
 
-### What Needs to Change
+**1. Brand & shell redesign**
+- Rename app to **TerraCloud XR**. New wordmark with subtle glow.
+- Sidebar: regrouped into 3 sections — *Workspace* (Dashboard, Leads, Properties, Contacts), *Simulation* (Command Center, Simulations, Deal Autopsy), *Intelligence* (Analytics, Tasks, Meetings, Documents). Premium icons + section labels.
+- New design tokens: deep graphite (`#0A0A0A` / `#0F1115`), cool steel-blue accent (`#3B82F6` → `#60A5FA` gradient), silver glass borders, subtle radial-glow backdrops on key panels, hairline dividers. Adds depth without leaving the dark/minimal language already in place.
+- Topbar: status pill ("XR Mode: Desktop" / "VR Ready"), command-K search, presence dot.
 
-**Phase 1: Database Schema (migrations)**
-Create tables with RLS so each user owns their data:
-1. `contacts` — name, email, phone, type, tags, user_id
-2. `properties` — address, city, state, zip, type, beds, baths, sqft, arv, asking_price, offer_price, status, user_id
-3. `leads` — title, stage, priority, source, estimated_value, next_follow_up, tags, contact_id, property_id, user_id
-4. `tasks` — title, description, completed, due_date, priority, related_entity_type, related_entity_id, user_id
-5. `documents` — name, type, size, entity_type, entity_id, url, user_id
-6. `meetings` — title, date, time, duration, location, notes, user_id
-7. `activities` — type, description, entity_type, entity_id, user_id (for activity feed)
+**2. New Pages (4)**
+- `/command-center` — flagship lead-to-simulation pairing screen (3 columns: Client Profile · Listing · Simulation Preview + Launch panel with fit score, objection hotspots, trust forecast).
+- `/simulations` — active + recent simulation runs grid with status, scores, paired client/listing, XR/Desktop badges.
+- `/simulations/:id` — live simulation viewport mock (cinematic still + HUD overlays: walkthrough %, trust meter, objection signals, controls hint).
+- `/deal-autopsy` and `/deal-autopsy/:id` — post-mission breakdown: critical breakdown point, trust decline chart, objection handling score, room coverage 3D-style diagram, recommendations.
 
-All tables get RLS policies: users can only CRUD their own rows.
+**3. Evolved existing pages**
+- **Leads** → "Buyer Intelligence". Each lead card gets archetype badge (Luxury Buyer / Skeptical Investor / etc.), trust meter, simulation-readiness dot.
+- **Lead detail** → tabs: *Overview · Behavior Model · Objections · Activity · Simulations*. Adds personality archetype, communication style, emotional tendencies, trust/risk/urgency meters, "Launch Simulation" CTA.
+- **Properties** → premium image-forward grid; each card shows digital-twin status, simulation-readiness, walkthrough complexity. Detail page adds buyer-fit panel and objection-hotspot map.
+- **Dashboard** → reframed as "Mission Control": simulation activity feed, top archetype performance, close probability gauge, recent autopsy summary, alongside existing pipeline/tasks.
+- **Analytics** (new page) → archetype performance, trust breakdown patterns, objection categories, simulation runs over time.
 
-**Phase 2: Replace Mock Data with Database Queries**
-Refactor every page to use `@tanstack/react-query` + Supabase client:
-- Dashboard: Query leads, tasks, activities for stats
-- Leads: CRUD from `leads` table, Kanban drag updates stage via `UPDATE`
-- Properties: CRUD from `properties` table
-- Contacts: CRUD from `contacts` table
-- Tasks: CRUD from `tasks` table with completion toggle
-- Documents: CRUD from `documents` table
-- Meetings: CRUD from `meetings` table
+**4. Mock intelligence layer**
+- New `src/lib/intelligence.ts` — deterministic generators that derive archetype, trust score, objections, fit score from a lead's `id` (so values are stable across renders). Real CRM data stays the source of truth for name/budget/etc.
+- New `src/data/simulations.ts` — 12+ believable simulation runs and 6+ deal autopsies as mock data (since these aren't in the DB). Stored in-memory; pitch-ready immediately, no migrations needed.
+- Seed-on-first-login helper: if a new user's account has zero leads/properties, auto-insert ~10 rich demo leads and ~10 demo properties into Supabase so the product looks alive on day one. (Optional toggle in Settings: "Reset demo data".)
 
-**Phase 3: Empty States for New Users**
-Each page shows a clean empty state with a CTA button when no data exists (e.g., "Add your first lead"). No preloaded data.
+**5. XR access language**
+- Subtle "XR Mode" toggle in topbar (Desktop ↔ VR), keyboard-controls hint chip on simulation screens, VR-ready badges on properties — communicated through iconography, not paragraphs.
 
-**Phase 4: Design Polish Pass**
-- Ensure consistent 8px grid, `p-6` cards, `max-w-7xl` containers
-- Remove any remaining emoji
-- Verify `rounded-lg` (not `rounded-full`) on cards
-- Subtle zebra striping on tables
-- Loading skeletons while data fetches
-- Toast notifications for all CRUD operations
-- Form validation with inline error messages
+### Files (high-level)
+- **New:** `src/pages/CommandCenter.tsx`, `Simulations.tsx`, `SimulationDetail.tsx`, `DealAutopsy.tsx`, `DealAutopsyDetail.tsx`, `Analytics.tsx`; `src/lib/intelligence.ts`; `src/data/simulations.ts`; `src/lib/seedDemoData.ts`; `src/components/xr/` (TrustMeter, ArchetypeBadge, FitScore, ObjectionHotspots, SimulationViewport, HUDOverlay, XRModeBadge).
+- **Refactor:** `AppSidebar`, `TopBar`, `index.css` (new tokens + subtle glow utilities), `Dashboard`, `Leads`, `LeadDetail`, `Properties`, `PropertyDetail`, `App.tsx` (new routes), `constants.ts` (archetypes, simulation statuses).
+- **No DB migrations** — intelligence layer is derived; simulations/autopsies are mock for the demo.
 
-**Phase 5: Landing Page Footer**
-Add footer with copyright and links (Privacy Policy, Terms, Contact).
-
-**Phase 6: Settings Page**
-Connect profile settings to the `profiles` table (name, avatar updates).
-
-### Technical Details
-
-- **7 database migrations** for new tables + RLS policies
-- **~12 files modified** (all page components + remove/reduce mockData dependency)
-- **New hooks**: `useLeads`, `useProperties`, `useContacts`, `useTasks`, `useDocuments`, `useMeetings` for React Query integration
-- **TypeScript types** will auto-generate from Supabase schema
-
-### Implementation Order
-1. Run all migrations (tables + RLS)
-2. Create shared data hooks
-3. Refactor pages one by one (Dashboard last since it aggregates)
-4. Add empty states
-5. Design consistency pass
-6. Landing page footer + Settings integration
-
-This is a large change touching most of the app. Shall I proceed?
+### Out of scope (for this pass)
+- Real 3D/WebXR runtime (use cinematic stills + HUD overlays as the "simulation viewport").
+- Persisting simulations/autopsies to Supabase (can come later if you want users to actually run sims).
+- Reworking auth, Tasks, Meetings, Documents internals — they get the new visual skin only.
 
