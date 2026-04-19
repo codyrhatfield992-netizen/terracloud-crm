@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Users, Building2, Contact2, CheckSquare, Calendar, FileText,
-  Settings, Crosshair, Sparkles, FileSearch, TrendingUp,
+  Settings, Crosshair, Sparkles, FileSearch, TrendingUp, Cloud,
 } from "lucide-react";
 
 type NavItem = { label: string; path: string; icon: typeof LayoutDashboard };
@@ -41,17 +41,17 @@ export default function AppSidebar() {
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-60 bg-sidebar border-r border-sidebar-border flex flex-col z-50">
-      {/* Logo */}
+      {/* Logo — TerraCloud XR wordmark */}
       <div className="h-14 flex items-center px-5 border-b border-sidebar-border">
-        <div className="flex items-center gap-2">
-          <div className="relative h-7 w-7 rounded-md bg-gradient-primary flex items-center justify-center xr-glow-soft">
-            <span className="text-[10px] font-bold text-primary-foreground font-mono">XR</span>
+        <div className="flex items-center gap-2.5">
+          <div className="relative">
+            <Cloud className="h-5 w-5 text-foreground/90" strokeWidth={1.5} />
+            <span className="absolute -bottom-0.5 -right-1 text-[7px] font-mono font-semibold text-muted-foreground tracking-tight">XR</span>
           </div>
           <div className="leading-tight">
-            <div className="text-[13px] font-semibold tracking-tight text-foreground">
-              Terra<span className="xr-gradient-text">Cloud</span>
+            <div className="text-[14px] font-semibold tracking-tight text-foreground">
+              TerraCloud <span className="text-muted-foreground/70 font-normal">XR</span>
             </div>
-            <div className="text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground">XR · Edition</div>
           </div>
         </div>
       </div>
@@ -60,7 +60,7 @@ export default function AppSidebar() {
       <nav className="flex-1 py-4 px-3 overflow-y-auto scrollbar-thin space-y-5">
         {SECTIONS.map(section => (
           <div key={section.label}>
-            <p className="px-3 mb-1.5 text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground/60">{section.label}</p>
+            <p className="px-3 mb-1.5 text-[9px] font-mono uppercase tracking-[0.22em] text-muted-foreground/50">{section.label}</p>
             <div className="space-y-0.5">
               {section.items.map(item => {
                 const active = isActive(item.path);
@@ -74,8 +74,8 @@ export default function AppSidebar() {
                         : "text-sidebar-foreground hover:text-foreground hover:bg-sidebar-accent/50"
                     }`}
                   >
-                    {active && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-gradient-to-b from-primary to-primary-glow rounded-r" />}
-                    <item.icon className={`h-[16px] w-[16px] shrink-0 ${active ? "text-primary" : ""}`} />
+                    {active && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-foreground/80 rounded-r" />}
+                    <item.icon className={`h-[16px] w-[16px] shrink-0 ${active ? "text-foreground" : ""}`} strokeWidth={1.75} />
                     <span className="truncate">{item.label}</span>
                   </NavLink>
                 );
@@ -93,8 +93,8 @@ export default function AppSidebar() {
             isActive("/settings") ? "text-foreground bg-sidebar-accent" : "text-sidebar-foreground hover:text-foreground hover:bg-sidebar-accent/50"
           }`}
         >
-          {isActive("/settings") && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-gradient-to-b from-primary to-primary-glow rounded-r" />}
-          <Settings className={`h-[16px] w-[16px] shrink-0 ${isActive("/settings") ? "text-primary" : ""}`} />
+          {isActive("/settings") && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-foreground/80 rounded-r" />}
+          <Settings className={`h-[16px] w-[16px] shrink-0 ${isActive("/settings") ? "text-foreground" : ""}`} strokeWidth={1.75} />
           <span>Settings</span>
         </NavLink>
       </div>
