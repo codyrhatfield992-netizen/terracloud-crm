@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { seedDemoDataIfEmpty } from "@/lib/seedDemoData";
+import { queryClient } from "@/lib/queryClient";
 
 interface AuthContextType {
   session: Session | null;
@@ -26,6 +28,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       (_event, session) => {
         setSession(session);
         setLoading(false);
+        // Defer seeding so we never block the auth callback
+        if (session?.user) {
+          setTimeout(() => {
+            seedDemoDataIfEmpty(session.user.id).then((r) => {
+              if (r.seeded) {
+                // Force CRM views to refetch with new demo data
+                queryClient.invalidateQueries();
+              }
+            });
+          }, 0);
+        }
       }
     );
 
@@ -33,6 +46,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
+      if (session?.user) {
+        setTimeout(() => {
+          seedDemoDataIfEmpty(session.user.id).then((r) => {
+            if (r.seeded) queryClient.invalidateQueries();
+          });
+        }, 0);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -51,3 +71,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 export const useAuth = () => useContext(AuthContext);
+
