@@ -27,6 +27,16 @@ import SimulationDetail from "./pages/SimulationDetail";
 import DealAutopsy from "./pages/DealAutopsy";
 import DealAutopsyDetail from "./pages/DealAutopsyDetail";
 import Analytics from "./pages/Analytics";
+import PracticeDashboard from "./pages/PracticeDashboard";
+import PracticeLauncher from "./pages/PracticeLauncher";
+import LivePracticeSession from "./pages/LivePracticeSession";
+import PracticeResults from "./pages/PracticeResults";
+import SessionHistory from "./pages/SessionHistory";
+import Leaderboard from "./pages/Leaderboard";
+import CoachDashboard from "./pages/CoachDashboard";
+import AdminCMS from "./pages/AdminCMS";
+import ForgotPassword from "./pages/ForgotPassword";
+import InviteAccept from "./pages/InviteAccept";
 import NotFound from "./pages/NotFound";
 
 const App = () => (
@@ -40,6 +50,8 @@ const App = () => (
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/invite" element={<InviteAccept />} />
 
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/leads" element={<ProtectedRoute><Leads /></ProtectedRoute>} />
@@ -61,6 +73,16 @@ const App = () => (
             <Route path="/deal-autopsy" element={<ProtectedRoute><DealAutopsy /></ProtectedRoute>} />
             <Route path="/deal-autopsy/:id" element={<ProtectedRoute><DealAutopsyDetail /></ProtectedRoute>} />
             <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+
+            {/* Training OS */}
+            <Route path="/practice" element={<ProtectedRoute><PracticeDashboard /></ProtectedRoute>} />
+            <Route path="/practice/launch" element={<ProtectedRoute><PracticeLauncher /></ProtectedRoute>} />
+            <Route path="/practice/live/:id" element={<ProtectedRoute><LivePracticeSession /></ProtectedRoute>} />
+            <Route path="/practice/results/:id" element={<ProtectedRoute><PracticeResults /></ProtectedRoute>} />
+            <Route path="/practice/history" element={<ProtectedRoute><SessionHistory /></ProtectedRoute>} />
+            <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
+            <Route path="/coach" element={<ProtectedRoute><CoachDashboard /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute><AdminCMS /></ProtectedRoute>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
