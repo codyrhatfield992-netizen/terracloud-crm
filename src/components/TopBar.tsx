@@ -21,6 +21,12 @@ const breadcrumbMap: Record<string, string> = {
   "/simulations": "Simulations",
   "/deal-autopsy": "Deal Autopsy",
   "/analytics": "Analytics",
+  "/practice": "Practice Dashboard",
+  "/practice/launch": "Practice Launcher",
+  "/practice/history": "Session History",
+  "/leaderboard": "Leaderboard",
+  "/coach": "Coach Console",
+  "/admin": "Admin CMS",
 };
 
 interface SearchResult {
@@ -164,7 +170,8 @@ export default function TopBar() {
           {showNewMenu && (
             <div className="absolute right-0 top-full mt-1.5 w-48 xr-glass-strong rounded-md shadow-elevated overflow-hidden z-50 py-1">
               {[
-                { label: "Launch Simulation", path: "/command-center" },
+                { label: "Launch Practice", path: "/practice/launch" },
+                { label: "Launch XR Simulation", path: "/command-center" },
                 { label: "New Lead", path: "/leads" },
                 { label: "New Contact", path: "/contacts" },
                 { label: "New Property", path: "/properties" },
