@@ -53,15 +53,16 @@ export default function AppSidebar() {
   const isActive = (p: string) => location.pathname === p || location.pathname.startsWith(p + "/");
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-sidebar/95 border-r border-sidebar-border flex flex-col z-50 backdrop-blur-xl">
-      <div className="h-16 flex items-center px-5 border-b border-sidebar-border">
+    <aside className="fixed left-0 top-0 h-screen w-64 bg-sidebar/95 border-r border-sidebar-border flex flex-col z-50 backdrop-blur-2xl shadow-elevated">
+      <div className="h-[72px] flex items-center px-5 border-b border-sidebar-border relative overflow-hidden">
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-primary/40 via-xr-amber/20 to-transparent" />
         <div className="flex items-center gap-3">
-          <div className="relative h-9 w-9 rounded-lg xr-glass-strong flex items-center justify-center xr-glow">
-            <Cloud className="h-5 w-5 text-foreground" strokeWidth={1.5} />
+          <div className="relative h-11 w-11 rounded-lg xr-panel-strong flex items-center justify-center xr-glow">
+            <Cloud className="h-5 w-5 text-primary" strokeWidth={1.5} />
             <span className="absolute -bottom-1 -right-1 text-[8px] font-mono font-semibold bg-primary text-primary-foreground rounded px-1">AI</span>
           </div>
           <div className="leading-tight">
-            <div className="text-[14px] font-semibold tracking-tight text-foreground">TerraCloud <span className="xr-silver-text">XR</span></div>
+            <div className="text-[15px] font-semibold text-foreground">TerraCloud <span className="xr-gradient-text">XR</span></div>
             <div className="text-[9px] font-mono uppercase tracking-[0.22em] text-muted-foreground">Simulation OS</div>
           </div>
         </div>
@@ -75,8 +76,8 @@ export default function AppSidebar() {
               {section.items.map(item => {
                 const active = isActive(item.path);
                 return (
-                  <NavLink key={item.path} to={item.path} className={`flex items-center gap-3 px-3 py-2 rounded-md text-[13px] font-medium transition-all relative group ${active ? "text-foreground bg-sidebar-accent shadow-panel" : "text-sidebar-foreground hover:text-foreground hover:bg-sidebar-accent/60"}`}>
-                    {active && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary rounded-r" />}
+                  <NavLink key={item.path} to={item.path} className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-[13px] font-medium transition-all relative group ${active ? "text-foreground bg-sidebar-accent shadow-panel" : "text-sidebar-foreground hover:text-foreground hover:bg-sidebar-accent/60 hover:translate-x-0.5"}`}>
+                    {active && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-gradient-to-b from-primary to-xr-amber rounded-r" />}
                     <item.icon className={`h-[16px] w-[16px] shrink-0 ${active ? "text-primary" : ""}`} strokeWidth={1.75} />
                     <span className="truncate">{item.label}</span>
                   </NavLink>
