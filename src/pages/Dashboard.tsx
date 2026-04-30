@@ -1,20 +1,25 @@
 import { Link } from "react-router-dom";
-import { Check, Clock, TrendingUp, Users, ArrowUpRight, Calendar, LayoutGrid, Plus } from "lucide-react";
+import { Check, Clock, TrendingUp, Users, ArrowUpRight, LayoutGrid, Plus, Activity } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import AppLayout from "@/components/AppLayout";
 import StatusBadge, { priorityVariant } from "@/components/StatusBadge";
 import { useLeads } from "@/hooks/useLeads";
 import { useTasks } from "@/hooks/useTasks";
-import { useContacts } from "@/hooks/useContacts";
 import { useActivities } from "@/hooks/useActivities";
 import { useAuth } from "@/contexts/AuthContext";
-import { PIPELINE_STAGES, getStageLabel, formatCompactCurrency, timeAgo } from "@/lib/constants";
+import { PIPELINE_STAGES, formatCompactCurrency, timeAgo } from "@/lib/constants";
 import { Skeleton } from "@/components/ui/skeleton";
 
-function ChartTooltip({ active, payload, label }: any) {
+type ChartTooltipProps = {
+  active?: boolean;
+  payload?: Array<{ value: number }>;
+  label?: string;
+};
+
+function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-popover border border-border rounded-md px-3 py-2 shadow-xl">
+    <div className="xr-panel rounded-md px-3 py-2 shadow-xl">
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="text-sm font-semibold text-foreground">{payload[0].value} leads</p>
     </div>
@@ -25,7 +30,6 @@ export default function Dashboard() {
   const { user } = useAuth();
   const { data: leads = [], isLoading: leadsLoading } = useLeads();
   const { data: tasks = [], isLoading: tasksLoading } = useTasks();
-  const { data: contacts = [] } = useContacts();
   const { data: activities = [] } = useActivities(10);
 
   const activeLeads = leads.filter(l => !["closed", "dead"].includes(l.stage));
@@ -51,16 +55,17 @@ export default function Dashboard() {
 
   return (
     <AppLayout>
-      <div className="space-y-8 max-w-[1200px]">
-        <div>
-          <h1 className="text-xl font-semibold text-foreground tracking-tight">Dashboard</h1>
-          <p className="text-sm text-muted-foreground mt-1">Welcome back, {userName}.</p>
+      <div className="space-y-7 max-w-[1680px]">
+        <div className="xr-panel-strong rounded-xl p-6">
+          <p className="text-[10px] font-mono uppercase tracking-[0.28em] text-primary mb-3 flex items-center gap-2"><Activity className="h-3.5 w-3.5" /> Mission Control</p>
+          <h1 className="text-5xl font-semibold xr-gradient-text text-glow">Dashboard</h1>
+          <p className="text-base text-muted-foreground mt-3">Welcome back, {userName}. CRM pipeline, buyer pressure, and training readiness are online.</p>
         </div>
 
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="bg-card border border-border rounded-md p-5 space-y-3">
+              <div key={i} className="xr-panel rounded-md p-5 space-y-3">
                 <Skeleton className="h-3 w-20" />
                 <Skeleton className="h-8 w-16" />
                 <Skeleton className="h-3 w-12" />
@@ -83,18 +88,19 @@ export default function Dashboard() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
               {metrics.map(m => (
-                <Link key={m.label} to={m.href} className="bg-card border border-border rounded-md p-5 hover:border-muted-foreground/20 transition-all group">
-                  <p className="text-xs text-muted-foreground mb-3">{m.label}</p>
-                  <p className="text-3xl font-semibold text-foreground tracking-tight">{m.value}</p>
+                <Link key={m.label} to={m.href} className="xr-panel xr-kpi rounded-md p-5 xr-focus-card group">
+                  <m.icon className="relative h-4 w-4 text-primary mb-4" />
+                  <p className="relative text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-3">{m.label}</p>
+                  <p className="relative text-4xl font-semibold text-foreground">{m.value}</p>
                   <p className="text-xs text-muted-foreground mt-1">{m.sub}</p>
                 </Link>
               ))}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 bg-card border border-border rounded-md p-6">
+              <div className="lg:col-span-2 xr-panel rounded-md p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-sm font-medium text-foreground">Pipeline Overview</h2>
                   <Link to="/leads" className="text-xs text-muted-foreground hover:text-foreground transition-colors">View all</Link>
@@ -107,10 +113,10 @@ export default function Dashboard() {
                       <BarChart data={pipelineData} barCategoryGap="20%">
                         <XAxis dataKey="name" tick={{ fill: "hsl(240 4% 46%)", fontSize: 11 }} axisLine={{ stroke: "hsl(240 4% 16%)" }} tickLine={false} interval={0} angle={-20} textAnchor="end" height={60} />
                         <YAxis tick={{ fill: "hsl(240 4% 46%)", fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} width={30} />
-                        <Tooltip content={<ChartTooltip />} cursor={{ fill: "hsl(0 0% 5%)" }} />
-                        <Bar dataKey="count" radius={[3, 3, 0, 0]}>
+                        <Tooltip content={<ChartTooltip />} cursor={{ fill: "hsl(var(--primary) / 0.06)" }} />
+                        <Bar dataKey="count" radius={[6, 6, 0, 0]}>
                           {pipelineData.map((entry, i) => (
-                            <Cell key={entry.id} fill={entry.id === "closed" ? "hsl(142 71% 45%)" : "hsl(217 91% 60%)"} fillOpacity={entry.id === "closed" ? 0.7 : 0.15 + (i * 0.12)} />
+                            <Cell key={entry.id} fill={entry.id === "closed" ? "hsl(var(--success))" : i % 2 ? "hsl(var(--primary))" : "hsl(var(--xr-amber))"} fillOpacity={entry.id === "closed" ? 0.82 : 0.34 + (i * 0.08)} />
                           ))}
                         </Bar>
                       </BarChart>
@@ -119,7 +125,7 @@ export default function Dashboard() {
                 )}
               </div>
 
-              <div className="bg-card border border-border rounded-md p-6 flex flex-col">
+              <div className="xr-panel rounded-md p-6 flex flex-col">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-sm font-medium text-foreground">My Tasks</h2>
                   <Link to="/tasks" className="text-xs text-muted-foreground hover:text-foreground transition-colors">View all</Link>
@@ -144,7 +150,7 @@ export default function Dashboard() {
             </div>
 
             {activities.length > 0 && (
-              <div className="bg-card border border-border rounded-md p-6">
+              <div className="xr-panel rounded-md p-6">
                 <h2 className="text-sm font-medium text-foreground mb-4">Recent Activity</h2>
                 <div className="space-y-0.5 max-h-[300px] overflow-y-auto scrollbar-thin">
                   {activities.map(a => (
