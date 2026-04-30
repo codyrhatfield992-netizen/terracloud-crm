@@ -12,17 +12,17 @@ export default function Simulations() {
 
   return (
     <AppLayout>
-      <div className="space-y-6 max-w-[1400px]">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
+      <div className="space-y-6 max-w-[1680px]">
+        <div className="xr-panel-strong rounded-xl p-6 flex items-start justify-between gap-4 flex-wrap">
           <div>
             <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-widest text-primary mb-2">
               <Sparkles className="h-3.5 w-3.5" />
               Simulation Engine
             </div>
-            <h1 className="text-2xl font-semibold tracking-tight">Simulations</h1>
-            <p className="text-sm text-muted-foreground mt-1">{SIMULATIONS.length} runs · {live.length} live · {scheduled.length} scheduled</p>
+            <h1 className="text-5xl font-semibold xr-gradient-text text-glow">Simulations</h1>
+            <p className="text-sm text-muted-foreground mt-3">{SIMULATIONS.length} runs · {live.length} live · {scheduled.length} scheduled · CRM-personalized buyer pressure</p>
           </div>
-          <Link to="/command-center" className="h-9 px-4 inline-flex items-center gap-2 rounded-md bg-gradient-primary text-primary-foreground text-sm font-medium hover:opacity-90 shadow-glow">
+          <Link to="/command-center" className="h-11 px-5 inline-flex items-center gap-2 rounded-md xr-button-primary text-sm font-semibold">
             <Play className="h-4 w-4" /> New Simulation
           </Link>
         </div>
@@ -69,7 +69,7 @@ function Section({ title, tone, count, children }: { title: string; tone: "succe
 
 function SimCard({ sim }: { sim: typeof SIMULATIONS[number] }) {
   return (
-    <Link to={`/simulations/${sim.id}`} className="xr-glass rounded-xl p-4 hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-200 block group">
+    <Link to={`/simulations/${sim.id}`} className="xr-panel rounded-xl p-5 xr-focus-card block group">
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-foreground group-hover:text-primary transition truncate">{sim.scenarioName}</p>
@@ -80,13 +80,13 @@ function SimCard({ sim }: { sim: typeof SIMULATIONS[number] }) {
 
       <div className="text-xs text-muted-foreground mb-3 truncate">{sim.propertyAddress}</div>
 
-      <div className="grid grid-cols-3 gap-2 mb-3">
+      <div className="grid grid-cols-3 gap-2 mb-4">
         <Stat label="Score" value={sim.status === "scheduled" ? "—" : String(sim.score)} tone={sim.score >= 75 ? "success" : sim.score >= 50 ? "primary" : "destructive"} />
         <Stat label="Trust" value={sim.status === "scheduled" ? "—" : String(sim.trustEnd)} tone="primary" />
         <Stat label="Walk %" value={sim.status === "scheduled" ? "—" : `${sim.walkthroughCoverage}`} tone="cyan" />
       </div>
 
-      <div className="flex items-center justify-between pt-3 border-t border-border">
+      <div className="flex items-center justify-between pt-4 border-t border-border">
         <span className={`inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest border rounded px-1.5 py-0.5 ${statusColor(sim.status)}`}>
           {sim.status === "live" && <span className="h-1.5 w-1.5 rounded-full bg-current xr-live-dot" />}
           {sim.status}
@@ -101,8 +101,8 @@ function SimCard({ sim }: { sim: typeof SIMULATIONS[number] }) {
 function Stat({ label, value, tone }: { label: string; value: string; tone: "success" | "primary" | "cyan" | "destructive" }) {
   const cls = tone === "success" ? "text-success" : tone === "destructive" ? "text-destructive" : tone === "cyan" ? "text-xr-cyan" : "text-primary";
   return (
-    <div className="text-center xr-glass rounded p-2">
-      <p className={`text-base font-mono font-semibold tabular-nums ${cls}`}>{value}</p>
+    <div className="text-center bg-background/35 border border-white/10 rounded p-2">
+      <p className={`text-lg font-mono font-semibold tabular-nums ${cls}`}>{value}</p>
       <p className="text-[9px] text-muted-foreground uppercase tracking-widest">{label}</p>
     </div>
   );
