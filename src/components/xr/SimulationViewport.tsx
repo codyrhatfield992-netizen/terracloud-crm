@@ -13,7 +13,7 @@ export default function SimulationViewport({ imageUrl, variant = "kitchen", heig
   const src = imageUrl ?? (variant === "bedroom" ? interior2 : interior1);
 
   return (
-    <div className={`relative ${height} w-full rounded-xl overflow-hidden xr-hairline xr-scan-line bg-background`}>
+    <div className={`relative ${height} w-full rounded-xl overflow-hidden xr-hairline xr-scan-line bg-background shadow-elevated`}>
       {/* Hero interior backdrop */}
       <img
         src={src}
@@ -23,9 +23,10 @@ export default function SimulationViewport({ imageUrl, variant = "kitchen", heig
       />
 
       {/* Vignette + grain layers — give it the cinematic depth */}
-      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-r from-background/50 via-transparent to-background/40" />
-      <div className="absolute inset-0 xr-grid-bg opacity-[0.08] mix-blend-overlay" />
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-r from-background/55 via-transparent to-background/45" />
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-transparent to-xr-amber/10 mix-blend-screen" />
+      <div className="absolute inset-0 xr-grid-bg opacity-[0.11] mix-blend-overlay" />
 
       {!src && (
         <div className="absolute inset-0 flex items-center justify-center">
