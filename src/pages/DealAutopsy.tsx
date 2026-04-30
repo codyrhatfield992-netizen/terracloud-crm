@@ -7,14 +7,14 @@ import { timeAgo } from "@/lib/constants";
 export default function DealAutopsy() {
   return (
     <AppLayout>
-      <div className="space-y-6 max-w-[1200px]">
-        <div>
+      <div className="space-y-6 max-w-[1600px]">
+        <div className="xr-panel-strong rounded-xl p-6">
           <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-widest text-primary mb-2">
             <FileSearch className="h-3.5 w-3.5" />
             Post-Mission Intelligence
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight">Deal Autopsy</h1>
-          <p className="text-sm text-muted-foreground mt-1">{AUTOPSIES.length} reports · forensic breakdown of every closed and failed simulation.</p>
+          <h1 className="text-5xl font-semibold xr-gradient-text text-glow">Deal Autopsy</h1>
+          <p className="text-sm text-muted-foreground mt-3">{AUTOPSIES.length} reports · forensic breakdown of every closed and failed simulation.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -22,7 +22,7 @@ export default function DealAutopsy() {
             const Icon = a.outcome === "closed" ? CheckCircle2 : a.outcome === "lost" ? XCircle : AlertTriangle;
             const outcomeCls = a.outcome === "closed" ? "text-success" : a.outcome === "lost" ? "text-destructive" : "text-warning";
             return (
-              <Link key={a.id} to={`/deal-autopsy/${a.id}`} className="xr-glass rounded-xl p-5 hover:border-primary/40 hover:-translate-y-0.5 transition group block">
+              <Link key={a.id} to={`/deal-autopsy/${a.id}`} className="xr-panel rounded-xl p-5 xr-focus-card group block">
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-foreground group-hover:text-primary transition truncate">{a.scenarioName}</p>
@@ -32,7 +32,7 @@ export default function DealAutopsy() {
                 </div>
 
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="text-3xl font-mono font-semibold tabular-nums text-foreground">{a.overallScore}</div>
+                  <div className="text-4xl font-mono font-semibold tabular-nums text-foreground">{a.overallScore}</div>
                   <div className="flex-1">
                     <div className={`flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest ${outcomeCls}`}>
                       <Icon className="h-3.5 w-3.5" /> {a.outcome.replace("_", " ")}
