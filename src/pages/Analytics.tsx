@@ -36,13 +36,13 @@ export default function Analytics() {
 
   return (
     <AppLayout>
-      <div className="space-y-6 max-w-[1400px]">
-        <div>
+      <div className="space-y-6 max-w-[1680px]">
+        <div className="xr-panel-strong rounded-xl p-6">
           <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-widest text-primary mb-2">
             <TrendingUp className="h-3.5 w-3.5" /> Performance Intelligence
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight">Analytics</h1>
-          <p className="text-sm text-muted-foreground mt-1">Archetype performance, trust patterns, and objection intelligence.</p>
+          <h1 className="text-5xl font-semibold xr-gradient-text text-glow">Analytics</h1>
+          <p className="text-sm text-muted-foreground mt-3">Archetype performance, trust patterns, and objection intelligence.</p>
         </div>
 
         {/* KPI strip */}
@@ -54,7 +54,7 @@ export default function Analytics() {
         </div>
 
         {/* Archetype performance */}
-        <div className="xr-glass rounded-xl p-6">
+        <div className="xr-panel rounded-xl p-6">
           <div className="flex items-center justify-between mb-5">
             <div>
               <h2 className="text-sm font-semibold flex items-center gap-2"><Brain className="h-4 w-4 text-primary" /> Archetype Performance</h2>
@@ -67,7 +67,7 @@ export default function Analytics() {
                 <XAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} axisLine={{ stroke: "hsl(var(--border))" }} tickLine={false} angle={-15} textAnchor="end" height={60} />
                 <YAxis domain={[0, 100]} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} axisLine={false} tickLine={false} width={28} />
                 <Tooltip contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 6, fontSize: 12 }} />
-                <Bar dataKey="avgScore" radius={[3, 3, 0, 0]}>
+                <Bar dataKey="avgScore" radius={[6, 6, 0, 0]}>
                   {archetypeData.map((d, i) => (
                     <Cell key={i} fill={d.avgScore >= 75 ? "hsl(var(--success))" : d.avgScore >= 50 ? "hsl(var(--primary))" : "hsl(var(--destructive))"} fillOpacity={0.85} />
                   ))}
@@ -79,7 +79,7 @@ export default function Analytics() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {/* Trust trajectory */}
-          <div className="xr-glass rounded-xl p-6">
+          <div className="xr-panel rounded-xl p-6">
             <h2 className="text-sm font-semibold mb-4">Score Trajectory</h2>
             <div className="h-[220px]">
               <ResponsiveContainer width="100%" height="100%">
@@ -87,14 +87,14 @@ export default function Analytics() {
                   <XAxis dataKey="run" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10, fontFamily: "JetBrains Mono" }} axisLine={{ stroke: "hsl(var(--border))" }} tickLine={false} />
                   <YAxis domain={[0, 100]} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10, fontFamily: "JetBrains Mono" }} axisLine={false} tickLine={false} width={28} />
                   <Tooltip contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 6, fontSize: 12 }} />
-                  <Line type="monotone" dataKey="score" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ fill: "hsl(var(--primary))", r: 3 }} />
+                  <Line type="monotone" dataKey="score" stroke="hsl(var(--primary))" strokeWidth={3} dot={{ fill: "hsl(var(--xr-amber))", r: 4, strokeWidth: 0 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
           </div>
 
           {/* Objection categories */}
-          <div className="xr-glass rounded-xl p-6">
+          <div className="xr-panel rounded-xl p-6">
             <h2 className="text-sm font-semibold mb-4">Top Missed Objections</h2>
             <div className="space-y-3">
               {objectionData.length === 0 ? (
@@ -113,7 +113,7 @@ export default function Analytics() {
         </div>
 
         {/* Archetype detail table */}
-        <div className="xr-glass rounded-xl overflow-hidden">
+        <div className="xr-panel rounded-xl overflow-hidden">
           <div className="p-5 border-b border-border">
             <h2 className="text-sm font-semibold">Archetype Detail</h2>
           </div>
@@ -146,7 +146,7 @@ export default function Analytics() {
 function Kpi({ label, value, suffix = "", tone }: { label: string; value: number; suffix?: string; tone?: "primary" | "success" | "cyan" }) {
   const cls = tone === "success" ? "text-success" : tone === "cyan" ? "text-xr-cyan" : tone === "primary" ? "text-primary" : "text-foreground";
   return (
-    <div className="xr-glass rounded-xl p-5">
+    <div className="xr-panel xr-kpi rounded-xl p-5 xr-focus-card">
       <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">{label}</p>
       <p className={`text-3xl font-mono font-semibold tabular-nums mt-2 ${cls}`}>{value}<span className="text-base text-muted-foreground">{suffix}</span></p>
     </div>
