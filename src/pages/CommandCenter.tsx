@@ -51,27 +51,27 @@ export default function CommandCenter() {
 
   return (
     <AppLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 max-w-[1780px]">
         {/* Header */}
-        <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div className="xr-panel-strong rounded-xl p-6 flex items-start justify-between gap-4 flex-wrap">
           <div>
             <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.22em] text-muted-foreground mb-2">
               <Sparkles className="h-3 w-3" />
               Lead-to-Simulation Pairing
             </div>
-            <h1 className="text-3xl font-semibold tracking-tight xr-silver-text">Command Center</h1>
-            <p className="text-sm text-muted-foreground mt-2">Select a client and listing. Inspect compatibility. Launch the rehearsal.</p>
+            <h1 className="text-5xl font-semibold xr-gradient-text text-glow">Command Center</h1>
+            <p className="text-base text-muted-foreground mt-3">Pair real CRM buyer intelligence with a listing, inspect likely friction, and launch the rehearsal.</p>
           </div>
           <div className="flex items-center gap-2 xr-glass rounded-md p-1">
             <button
               onClick={() => setMode("desktop")}
-              className={`h-8 px-3 rounded text-[10px] font-mono uppercase tracking-widest flex items-center gap-1.5 transition ${mode === "desktop" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"}`}
+              className={`h-9 px-3 rounded text-[10px] font-mono uppercase tracking-widest flex items-center gap-1.5 transition ${mode === "desktop" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
             >
               <Monitor className="h-3.5 w-3.5" /> Desktop
             </button>
             <button
               onClick={() => setMode("vr")}
-              className={`h-8 px-3 rounded text-[10px] font-mono uppercase tracking-widest flex items-center gap-1.5 transition ${mode === "vr" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"}`}
+              className={`h-9 px-3 rounded text-[10px] font-mono uppercase tracking-widest flex items-center gap-1.5 transition ${mode === "vr" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
             >
               <Headset className="h-3.5 w-3.5" /> VR
             </button>
@@ -81,7 +81,7 @@ export default function CommandCenter() {
         {/* Three-column command layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
           {/* Client */}
-          <div className="lg:col-span-3 xr-glass rounded-xl p-5 space-y-4">
+          <div className="lg:col-span-3 xr-panel rounded-xl p-5 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Client Profile</h2>
               <Brain className="h-3.5 w-3.5 text-primary" />
@@ -89,7 +89,7 @@ export default function CommandCenter() {
             <select
               value={selectedLead?.id ?? ""}
               onChange={(e) => setSelectedLeadId(e.target.value)}
-              className="w-full h-9 px-3 rounded-md bg-secondary border border-border text-sm focus:outline-none focus:border-primary"
+              className="w-full h-10 px-3 rounded-md bg-secondary border border-border text-sm focus:outline-none focus:border-primary"
             >
               {leads.map(l => <option key={l.id} value={l.id}>{l.title}</option>)}
             </select>
@@ -131,7 +131,7 @@ export default function CommandCenter() {
 
           {/* Viewport */}
           <div className="lg:col-span-6 space-y-4">
-            <SimulationViewport>
+            <SimulationViewport height="h-[520px]">
               {selectedProperty && intel && (
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 xr-glass-strong rounded-lg px-5 py-3 flex items-center gap-4">
                   <div className="text-center">
@@ -160,7 +160,7 @@ export default function CommandCenter() {
 
             {/* Fit panel */}
             {fit && (
-              <div className="xr-glass rounded-xl p-5">
+              <div className="xr-panel rounded-xl p-5">
                 <div className="flex items-center gap-6">
                   <FitScore score={fit.fitScore} label="Fit" size="lg" />
                   <div className="flex-1 grid grid-cols-2 gap-4">
@@ -207,7 +207,7 @@ export default function CommandCenter() {
 
           {/* Listing + Launch */}
           <div className="lg:col-span-3 space-y-4">
-            <div className="xr-glass rounded-xl p-5 space-y-4">
+            <div className="xr-panel rounded-xl p-5 space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Listing</h2>
                 <Building2 className="h-3.5 w-3.5 text-primary" />
@@ -215,7 +215,7 @@ export default function CommandCenter() {
               <select
                 value={selectedProperty?.id ?? ""}
                 onChange={(e) => setSelectedPropertyId(e.target.value)}
-                className="w-full h-9 px-3 rounded-md bg-secondary border border-border text-sm focus:outline-none focus:border-primary"
+                className="w-full h-10 px-3 rounded-md bg-secondary border border-border text-sm focus:outline-none focus:border-primary"
               >
                 {properties.map(p => <option key={p.id} value={p.id}>{p.address}</option>)}
               </select>
@@ -227,15 +227,15 @@ export default function CommandCenter() {
                     <p className="text-xs text-muted-foreground mt-0.5">{selectedProperty.city}, {selectedProperty.state}</p>
                   </div>
                   <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                    <div className="xr-glass rounded p-2">
+                    <div className="bg-background/35 border border-white/10 rounded p-2">
                       <p className="font-mono text-foreground">{selectedProperty.beds || "—"}</p>
                       <p className="text-[9px] text-muted-foreground uppercase">Beds</p>
                     </div>
-                    <div className="xr-glass rounded p-2">
+                    <div className="bg-background/35 border border-white/10 rounded p-2">
                       <p className="font-mono text-foreground">{selectedProperty.baths || "—"}</p>
                       <p className="text-[9px] text-muted-foreground uppercase">Baths</p>
                     </div>
-                    <div className="xr-glass rounded p-2">
+                    <div className="bg-background/35 border border-white/10 rounded p-2">
                       <p className="font-mono text-foreground">{selectedProperty.sqft ? `${(selectedProperty.sqft/1000).toFixed(1)}k` : "—"}</p>
                       <p className="text-[9px] text-muted-foreground uppercase">SqFt</p>
                     </div>
@@ -257,7 +257,7 @@ export default function CommandCenter() {
             </div>
 
             {/* Launch */}
-            <div className="xr-glass-strong rounded-xl p-5 space-y-4 xr-glow">
+            <div className="xr-panel-strong rounded-xl p-5 space-y-4 xr-glow">
               <div className="space-y-1">
                 <p className="text-[10px] font-mono uppercase tracking-widest text-primary">Launch Sequence</p>
                 {profile && (
@@ -269,7 +269,7 @@ export default function CommandCenter() {
               </div>
               <Link
                 to="/simulations/sim_01"
-                className="w-full h-11 inline-flex items-center justify-center gap-2 rounded-md bg-foreground text-background text-sm font-semibold hover:bg-foreground/90 transition shadow-glow"
+                className="w-full h-12 inline-flex items-center justify-center gap-2 rounded-md xr-button-primary text-sm font-semibold"
               >
                 <Play className="h-4 w-4 fill-current" /> Launch Simulation
                 <ChevronRight className="h-4 w-4" />
